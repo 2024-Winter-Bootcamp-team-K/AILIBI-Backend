@@ -19,7 +19,7 @@ COPY requirements.txt /backend/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 소스 코드 복사
-COPY 1 /backend
+COPY . /backend
 
 # 포트 설정 (필요에 따라 수정 가능)
 EXPOSE 8000
