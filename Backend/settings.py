@@ -47,6 +47,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_yasg',
+    'chat',
+    'llama3',
+    'scenario',
+    'stt',
+    'tts',
+    'user'
 ]
 
 MIDDLEWARE = [
