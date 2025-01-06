@@ -1,5 +1,5 @@
 # 베이스 이미지 설정
-FROM python:3.11.9
+FROM python:3.12
 
 # 시스템 패키지 업데이트 및 필수 패키지 설치
 RUN apt-get update && apt-get install -y \
