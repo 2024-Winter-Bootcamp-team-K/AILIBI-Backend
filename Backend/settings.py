@@ -17,15 +17,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load secrets
-try:
-    with open(BASE_DIR / 'secrets.json') as f:
-        secret_data = json.load(f)
-except FileNotFoundError:
-    # Fallback to environment variables if secrets.json is not found
-    secret_data = {
-        'SECRET_KEY': os.getenv('SECRET_KEY', 'fallback-secret-key'),
-        'DATABASE': os.getenv('DATABASE', {'' : ''}),
-    }
+with open(BASE_DIR / 'secrets.json') as f:
+    secret_data = json.load(f)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = secret_data['SECRET_KEY']
@@ -94,16 +87,7 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': secret_data['DATABASE']['ENGINE'],
-        'NAME': secret_data['DATABASE']['NAME'],
-        'USER': secret_data['DATABASE']['USER'],
-        'PASSWORD': secret_data['DATABASE']['PASSWORD'],
-        'HOST': secret_data['DATABASE']['HOST'],
-        'PORT': secret_data['DATABASE']['PORT'],
-    }
-}
+DATABASES = secret_data['DATABASE']
 
 
 # Password validation
