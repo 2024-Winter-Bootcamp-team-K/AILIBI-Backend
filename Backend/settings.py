@@ -17,8 +17,22 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load secrets
-with open(BASE_DIR / 'secrets.json') as f:
-    secret_data = json.load(f)
+try:
+    with open(BASE_DIR / 'secrets.json') as f:
+        secret_data = json.load(f)
+except FileNotFoundError:
+    # Fallback to environment variables if secrets.json is not found
+    secret_data = {
+        'SECRET_KEY': os.getenv('SECRET_KEY', 'fallback-secret-key'),
+        'DATABASES': os.getenv('DATABASES',{
+                                                'ENGINE' : 'django.db.backends.postgresql',
+                                                'NAME' : 'default_db_name',
+                                                'USER' : 'default_db_user',
+                                                'PASSWORD' : 'default_password',
+                                                'HOST' : 'localhost',
+                                                'PORT' : '5432'
+                                            })
+    }
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = secret_data['SECRET_KEY']
