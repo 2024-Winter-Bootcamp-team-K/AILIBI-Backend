@@ -101,7 +101,7 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = secret_data['DATABASE']
+DATABASES = secret_data['DATABASES']
 
 
 # Password validation
