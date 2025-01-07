@@ -27,4 +27,4 @@ class Suspect(models.Model):
     is_deleted = models.BooleanField(default=False)
 
     class Meta:
-        db_table = 'Scenario'
+        db_table = 'Suspect'
