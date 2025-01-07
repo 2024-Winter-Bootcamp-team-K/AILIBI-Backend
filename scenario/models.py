@@ -1,5 +1,5 @@
 from django.db import models
-from Backend.user.models import User
+from user.models import User
 
 # Create your models here.
 class Scenario(models.Model):

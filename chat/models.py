@@ -1,5 +1,5 @@
 from django.db import models
-from Backend.suspect.models import Suspect
+from suspect.models import Suspect
 
 # Create your models here.
 class Chat(models.Model):

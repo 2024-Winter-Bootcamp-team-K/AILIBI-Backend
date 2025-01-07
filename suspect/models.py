@@ -1,5 +1,5 @@
 from django.db import models
-from Backend.scenario.models import Scenario
+from scenario.models import Scenario
 
 # Create your models here.
 class Suspect(models.Model):
