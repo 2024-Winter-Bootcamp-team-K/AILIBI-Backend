@@ -21,21 +21,22 @@ try:
     with open(BASE_DIR / 'secrets.json') as f:
         secret_data = json.load(f)
 except FileNotFoundError:
-    # Fallback to environment variables if secrets.json is not found
-    secret_data = {
-        'SECRET_KEY': os.getenv('SECRET_KEY', 'fallback-secret-key'),
-        'DATABASES': os.getenv('DATABASES',{
-                                                'ENGINE' : 'django.db.backends.postgresql',
-                                                'NAME' : 'default_db_name',
-                                                'USER' : 'default_db_user',
-                                                'PASSWORD' : 'default_password',
-                                                'HOST' : 'localhost',
-                                                'PORT' : '5432'
-                                            })
-    }
+    secret_data = {}
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = secret_data['SECRET_KEY']
+SECRET_KEY = secret_data.get('SECRET_KEY', os.getenv('SECRET_KEY', 'fallback-secret-key'))
+
+# Database Configuration
+DATABASES = secret_data.get('DATABASES', {
+    'default': {
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.getenv('DB_NAME', 'default_db_name'),
+        'USER': os.getenv('DB_USER', 'default_db_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'default_password'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+    }
+})
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -101,7 +102,7 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = secret_data['DATABASES']
+
 
 
 # Password validation
