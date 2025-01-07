@@ -19,6 +19,12 @@ services:
             - 8000
         depends_on:
             - PostgreSQL
+        environment:
+            DB_NAME: "${DB_NAME}"
+            DB_USER: "${DB_USER}"
+            DB_PASSWORD: "${DB_PASSWORD}"
+            DB_HOST: "${DB_HOST}"
+            DB_PORT: "${DB_PORT}"
 
     PostgreSQL:
         image: postgres:latest
@@ -32,8 +38,6 @@ services:
             POSTGRES_PASSWORD: "${DB_PASSWORD}"
         volumes:
             - postgres_data:/var/lib/postgresql/data
-        env_file:
-            - .env
 
 volumes:
   postgres_data:
