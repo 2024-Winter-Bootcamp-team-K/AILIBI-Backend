@@ -9,6 +9,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['name', 'email', 'password', 'password_check']
 
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("이미 가입한 이메일입니다.")
+        return value
+
     def validate(self, data):
         if data['password'] != data['password_check']:
             raise serializers.ValidationError({"password_check": "비밀번호가 일치하지 않습니다."})
