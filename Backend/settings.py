@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'chat',
     'llama3',
     'scenario',
+    'suspect',
+    'evidence',
     'stt',
     'tts',
     'user'
