@@ -11,7 +11,8 @@ class UserRegistrationView(APIView):
             serializer.save()
             return Response({
                 "name": serializer.validated_data["name"],
-                "email": serializer.validated_data["email"]
+                "email": serializer.validated_data["email"],
+                "password": serializer.validated_data["password"],
             }, status=status.HTTP_201_CREATED)
         elif User.objects.filter(email=request.data.get('email')).exists():
             return Response({"Error": "이미 가입한 이메일입니다."}, status=status.HTTP_409_CONFLICT)
