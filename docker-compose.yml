@@ -8,9 +8,36 @@ services:
         container_name: backend
         volumes:
             - .:/backend
-        command: sh -c "sleep 10 && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+        command: sh -c "sleep 10 && 
+                python manage.py makemigrations && 
+                python manage.py migrate && 
+                python manage.py runserver 0.0.0.0:8000"
         restart: on-failure
         ports:
             - 8000:8000
         expose:
             - 8000
+        depends_on:
+            - PostgreSQL
+        environment:
+            DB_NAME: "${DB_NAME}"
+            DB_USER: "${DB_USER}"
+            DB_PASSWORD: "${DB_PASSWORD}"
+            DB_HOST: "${DB_HOST}"
+            DB_PORT: "${DB_PORT}"
+
+    PostgreSQL:
+        image: postgres:latest
+        restart: always
+        container_name: PostgresSQL
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_DB: "${DB_NAME}"
+            POSTGRES_USER: "${DB_USER}"
+            POSTGRES_PASSWORD: "${DB_PASSWORD}"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
