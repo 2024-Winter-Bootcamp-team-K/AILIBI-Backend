@@ -23,6 +23,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
+      - name: Export environment variables
+        run: |
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
+
       # 3. Docker Compose 빌드 및 테스트
       - name: Build and Test with Docker
         run: |
