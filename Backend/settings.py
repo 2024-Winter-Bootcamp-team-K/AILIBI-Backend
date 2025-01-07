@@ -24,7 +24,7 @@ except FileNotFoundError:
     # Fallback to environment variables if secrets.json is not found
     secret_data = {
         'SECRET_KEY': os.getenv('SECRET_KEY', 'fallback-secret-key'),
-        'DATABASE': os.getenv('DATABASE', 'fallback-database'),
+        'DATABASE': os.getenv('DATABASE', {'' : ''}),
     }
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -95,7 +95,14 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': secret_data['DATABASE']
+    'default': {
+        'ENGINE': secret_data['DATABASE']['ENGINE'],
+        'NAME': secret_data['DATABASE']['NAME'],
+        'USER': secret_data['DATABASE']['USER'],
+        'PASSWORD': secret_data['DATABASE']['PASSWORD'],
+        'HOST': secret_data['DATABASE']['HOST'],
+        'PORT': secret_data['DATABASE']['PORT'],
+    }
 }
 
 
