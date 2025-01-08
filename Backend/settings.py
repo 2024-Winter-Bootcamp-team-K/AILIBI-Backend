@@ -26,6 +26,9 @@ except FileNotFoundError:
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = secret_data.get('SECRET_KEY', os.getenv('SECRET_KEY', 'fallback-secret-key'))
 
+NAVER_CLIENT_ID = secret_data.get('NAVER_CLIENT_ID', os.getenv('NAVER_CLIENT_ID', 'fallback-client-id'))
+NAVER_CLIENT_SECRET = secret_data.get('NAVER_CLIENT_SECRET', os.getenv('NAVER_CLIENT_SECRET', 'fallback-client-secret'))
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
