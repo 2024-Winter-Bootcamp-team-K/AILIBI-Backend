@@ -21,7 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'password', 'created_at', 'updated_at', 'is_deleted']
+        fields = ['name', 'email', 'password', 'password_check']
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate_email(self, value):
@@ -35,9 +35,12 @@ class UserSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        validated_data.pop('password_check', None)
+
         password = validated_data.pop('password')
         hashed_password = hash_password(password)
         validated_data['password'] = hashed_password
+
         return User.objects.create(**validated_data)
 
 #로그인
