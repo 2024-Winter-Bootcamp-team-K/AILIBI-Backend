@@ -37,8 +37,8 @@ urlpatterns = [
     path(r'redoc', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc-v1'),
     path("admin/", admin.site.urls),
     path('stt/', include('stt.urls')),
-    path('auth/', include('user.urls', namespace='auth')),  # 사용자 로그인/회원가입
-    path('users/', include('user.users_urls', namespace='users')),  # 사용자 정보 불러오기
+    path('auth/', include('user.urls')),  # 사용자 로그인/회원가입
+    path('users/', include('user.users_urls')),  # 사용자 정보 불러오기
 
-    path('histories/', include('scenario.urls', namespace='histories'))
+    #path('histories/', include('scenario.urls'))
 ]
