@@ -16,8 +16,8 @@ def check_password(password, hashed):
 
 #회원가입
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, max_length=16)
-    password_check = serializers.CharField(write_only=True, max_length=16)
+    password = serializers.CharField(write_only=True, max_length=64)
+    password_check = serializers.CharField(write_only=True, max_length=64)
 
     class Meta:
         model = User
