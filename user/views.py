@@ -29,3 +29,19 @@ class LoginView(APIView):
             }, status=status.HTTP_201_CREATED)
 
         return Response({"Error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserDetailView(APIView):
+    def get(self, request, user_id):
+        try:
+            # user_id로 사용자 조회
+            user = User.objects.get(id=user_id, is_deleted=False)  # 삭제되지 않은 사용자만 조회
+            return Response({
+                "name": user.name,
+                "email": user.email
+            }, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            # 사용자가 존재하지 않거나 삭제된 경우
+            return Response({"Error": "서버로부터 잘못된 요청이 전송 되었습니다."}, status=status.HTTP_502_BAD_GATEWAY)
+        except Exception as e:
+            # 기타 예외 처리
+            return Response({"Error": "서버에 에러가 발생하였습니다."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
