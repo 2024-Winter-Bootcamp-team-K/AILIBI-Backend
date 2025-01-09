@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'channels',
     'chat',
-    'llama3',
+    'llm',
     'scenario',
     'suspect',
     'evidence',

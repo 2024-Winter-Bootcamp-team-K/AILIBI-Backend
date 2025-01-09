@@ -6,9 +6,6 @@ class MyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # WebSocket 연결 시 실행
         await self.accept()
-        await self.send(text_data=json.dumps({
-            "message": "WebSocket 연결 성공!"
-        }))
 
     async def disconnect(self, close_code):
         # WebSocket 연결 종료 시 실행
