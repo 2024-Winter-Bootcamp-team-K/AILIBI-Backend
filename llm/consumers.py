@@ -12,8 +12,9 @@ class MyConsumer(AsyncWebsocketConsumer):
         pass
 
     async def receive(self, text_data):
-        # 클라이언트로부터 메시지를 받을 때 실행
         data = json.loads(text_data)
+        user_input = data.get("message", "No message received!")
+        # Echo the message back as a simple test
         await self.send(text_data=json.dumps({
-            "response": f"메시지 수신: {data['message']}"
+            "message": f"Received: {user_input}"
         }))

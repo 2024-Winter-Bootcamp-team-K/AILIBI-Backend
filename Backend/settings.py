@@ -29,6 +29,9 @@ SECRET_KEY = secret_data.get('SECRET_KEY', os.getenv('SECRET_KEY', 'fallback-sec
 NAVER_CLIENT_ID = secret_data.get('NAVER_CLIENT_ID', os.getenv('NAVER_CLIENT_ID', 'fallback-client-id'))
 NAVER_CLIENT_SECRET = secret_data.get('NAVER_CLIENT_SECRET', os.getenv('NAVER_CLIENT_SECRET', 'fallback-client-secret'))
 
+#yourproject/settings.py
+OPENAI_API_KEY = secret_data['OPENAI_API_KEY']
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -87,6 +90,14 @@ TEMPLATES = [
 ASGI_APPLICATION = "Backend.asgi.application"
 
 WSGI_APPLICATION = 'Backend.wsgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
