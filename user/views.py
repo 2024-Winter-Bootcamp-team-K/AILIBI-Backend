@@ -24,6 +24,7 @@ class LoginView(APIView):
             email = serializer.validated_data['email']
             user = User.objects.get(email=email)  # 로그인 성공 시 사용자 정보
             return Response({
+                "id" : user.id,
                 "name": user.name,
                 "email": user.email
             }, status=status.HTTP_201_CREATED)

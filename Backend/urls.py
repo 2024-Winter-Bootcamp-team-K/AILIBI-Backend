@@ -40,5 +40,5 @@ urlpatterns = [
     path('auth/', include('user.urls')),  # 사용자 로그인/회원가입
     path('users/', include('user.users_urls')),  # 사용자 정보 불러오기
 
-    #path('histories/', include('scenario.urls'))
+    path('histories/', include('scenario.urls'))
 ]
