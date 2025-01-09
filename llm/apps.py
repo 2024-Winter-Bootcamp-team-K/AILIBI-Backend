@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class Llama3Config(AppConfig):
+class LlmConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'llama3'
+    name = 'llm'
