@@ -30,7 +30,7 @@ NAVER_CLIENT_ID = secret_data.get('NAVER_CLIENT_ID', os.getenv('NAVER_CLIENT_ID'
 NAVER_CLIENT_SECRET = secret_data.get('NAVER_CLIENT_SECRET', os.getenv('NAVER_CLIENT_SECRET', 'fallback-client-secret'))
 
 #yourproject/settings.py
-OPENAI_API_KEY = secret_data['OPENAI_API_KEY']
+OPENAI_API_KEY = secret_data.get('OPENAI_API_KEY', os.getenv('OPENAI_API_KEY', 'your-openai-api-key'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
