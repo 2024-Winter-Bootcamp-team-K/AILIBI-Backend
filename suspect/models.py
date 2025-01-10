@@ -13,18 +13,18 @@ class Suspect(models.Model):
         (1, '범인'),
     ]
 
-    id = models.AutoField(primary_key=True)
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
-    name = models.CharField(max_length=16)
-    gender = models.BooleanField(choices=GENDER_CHOICES)
-    age = models.IntegerField()
-    job = models.CharField(max_length=16)
-    personality = models.CharField(max_length=32)
-    is_theif = models.BooleanField(choices=THEIF_CHOICES)
-    image = models.CharField(max_length=512)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    is_deleted = models.BooleanField(default=False)
+    id = models.AutoField(primary_key=True, null=False)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, null=False)
+    name = models.CharField(max_length=16, null=False)
+    gender = models.BooleanField(choices=GENDER_CHOICES, null=False)
+    age = models.IntegerField(null=False)
+    job = models.CharField(max_length=16, null=False)
+    personality = models.CharField(max_length=32, null=False)
+    is_theif = models.BooleanField(choices=THEIF_CHOICES, null=False)
+    image = models.CharField(max_length=512, null=False)
+    created_at = models.DateTimeField(auto_now_add=True, null=False)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    is_deleted = models.BooleanField(default=False, null=True)
 
     class Meta:
         db_table = 'Suspect'
