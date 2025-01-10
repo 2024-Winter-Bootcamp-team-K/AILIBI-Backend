@@ -40,7 +40,6 @@ urlpatterns = [
     path('auth/', include('user.urls')),  # 사용자 로그인/회원가입
     path('users/', include('user.users_urls')),  # 사용자 정보 불러오기
 
-    path('histories', include('scenario.urls')),  # Default to scenario.urls for general histories
+    path('histories', include('scenario.urls')),  # /histories?user_id={userId}, /histories?scenario_id={scenarioId}, /histories?suspect_id={suspectId}, /histories?scenario_id={scenarioId}
+    path('scenarios/', include('scenario.scenario_urls')),  # /scenarios/{scenario_id}, /scenarios/{scenario_id}
 ]
-
-
