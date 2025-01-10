@@ -40,6 +40,7 @@ urlpatterns = [
     path('auth/', include('user.urls')),  # 사용자 로그인/회원가입
     path('users/', include('user.users_urls')),  # 사용자 정보 불러오기
 
-    re_path(r'^histories\?scenario_id=\d+', include('scenario.urls')),  # scenario 관련 요청
-    re_path(r'^histories\?suspect_id=\d+', include('suspect.urls')),  # suspect 관련 요청
+    path('histories', include('scenario.urls')),  # Default to scenario.urls for general histories
 ]
+
+
