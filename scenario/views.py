@@ -9,7 +9,7 @@ from chat.models import Chat
 from suspect.models import Suspect
 from evidence.models import Evidence
 
-from .serializers import ScenarioSerializer, SelectedScenarioSerializer
+from .serializers import his_ScenarioSerializer, his_SelectedScenarioSerializer, ScenarioSerializer, SuspectSerializer, EvidenceSerializer
 
 class HistoriesView(APIView):
     def get(self, request):
@@ -20,12 +20,12 @@ class HistoriesView(APIView):
         if user_id:
             user = get_object_or_404(User, id=user_id)
             scenarios = Scenario.objects.filter(user_id=user.id)
-            serializer = ScenarioSerializer(scenarios, many=True)
+            serializer = his_ScenarioSerializer(scenarios, many=True)
             return Response({"scenarios": serializer.data}, status=status.HTTP_200_OK)
 
         elif scenario_id:
             scenario = get_object_or_404(Scenario, id=scenario_id)
-            serializer = SelectedScenarioSerializer(scenario)
+            serializer = his_SelectedScenarioSerializer(scenario)
             return Response({"scenarios" : serializer.data}, status=status.HTTP_200_OK)
 
         elif suspect_id:
@@ -69,3 +69,43 @@ class HistoriesView(APIView):
                             status=status.HTTP_200_OK)
 
         return Response({'error': 'scenario_id is required for deletion'}, status=status.HTTP_400_BAD_REQUEST)
+
+class ScenariosView(APIView):
+    def get(self, request, scenario_id):
+        try:
+            scenario = Scenario.objects.get(id=scenario_id)
+            suspects = Suspect.objects.filter(scenario_id=scenario_id)
+            evidences = Evidence.objects.filter(scenario_id=scenario_id)
+
+            scenario_data = ScenarioSerializer(scenario).data
+            suspects_data = SuspectSerializer(suspects, many=True).data
+            evidences_data = EvidenceSerializer(evidences, many=True).data
+
+            # Add init_chat for each suspect
+            for suspect_data, suspect in zip(suspects_data, suspects):
+                chat = Chat.objects.filter(suspect_id=suspect.id).first()
+                suspect_data['init_chat'] = chat.init_chat if chat else ''
+
+            response_data = {
+                'scenarios': [scenario_data],
+                'suspects': suspects_data,
+                'evidences': evidences_data
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        except Scenario.DoesNotExist:
+            return Response({"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND)\
+
+
+    def put(self, request, scenario_id):
+        try:
+            scenario = Scenario.objects.get(id=scenario_id)
+        except Scenario.DoesNotExist:
+            return Response({"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Update the note field with the provided note from the request
+        scenario.note = request.data.get('note', scenario.note)
+        scenario.save()
+
+        return Response({"note": scenario.note}, status=status.HTTP_200_OK)
