@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, re_path, include
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -40,5 +40,7 @@ urlpatterns = [
     path('auth/', include('user.urls')),  # 사용자 로그인/회원가입
     path('users/', include('user.users_urls')),  # 사용자 정보 불러오기
 
-    path('histories/', include('scenario.urls'))
+    path('histories', include('scenario.urls')),  # Default to scenario.urls for general histories
 ]
+
+
