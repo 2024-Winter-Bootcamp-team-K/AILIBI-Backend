@@ -9,7 +9,7 @@ from chat.models import Chat
 from suspect.models import Suspect
 from evidence.models import Evidence
 
-from .serializers import his_ScenarioSerializer, his_SelectedScenarioSerializer, ScenarioSerializer, SuspectSerializer, EvidenceSerializer
+from .serializers import His_ScenarioSerializer, His_SuspectSerializer, ScenarioSerializer, SuspectSerializer, EvidenceSerializer
 
 class HistoriesView(APIView):
     def get(self, request):
@@ -20,13 +20,44 @@ class HistoriesView(APIView):
         if user_id:
             user = get_object_or_404(User, id=user_id)
             scenarios = Scenario.objects.filter(user_id=user.id)
-            serializer = his_ScenarioSerializer(scenarios, many=True)
+            serializer = His_ScenarioSerializer(scenarios, many=True)
             return Response({"scenarios": serializer.data}, status=status.HTTP_200_OK)
 
         elif scenario_id:
-            scenario = get_object_or_404(Scenario, id=scenario_id)
-            serializer = his_SelectedScenarioSerializer(scenario)
-            return Response({"scenarios" : serializer.data}, status=status.HTTP_200_OK)
+
+            # Scenario 정보 가져오기
+            scenario = Scenario.objects.filter(id=scenario_id).first()
+
+            if not scenario:
+                return Response({"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            # Suspects 정보 가져오기
+            suspects = Suspect.objects.filter(scenario_id=scenario_id)
+
+            # Evidence 정보 가져오기
+            evidences = Evidence.objects.filter(scenario_id=scenario_id)
+
+
+            suspects_data = His_SuspectSerializer(suspects, many=True).data
+
+            # 각 용의자에 대해 init_chat 가져오기
+            for suspect_data in suspects_data:
+                chat = Chat.objects.filter(suspect_id=suspect_data['id']).first()
+
+                suspect_data['init_chat'] = chat.init_chat if chat else ''
+
+            # Scenario, Suspects, Evidence 직렬화
+            scenario_data = ScenarioSerializer(scenario).data
+            evidence_data = EvidenceSerializer(evidences, many=True).data
+
+            # 최종 응답 데이터 구성
+            response_data = {
+                "scenarios": [scenario_data],
+                "suspects": suspects_data,
+                "evidences": evidence_data
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
 
         elif suspect_id:
             chat = get_object_or_404(Chat, suspect_id=suspect_id)
@@ -69,6 +100,7 @@ class HistoriesView(APIView):
                             status=status.HTTP_200_OK)
 
         return Response({'error': 'scenario_id is required for deletion'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ScenariosView(APIView):
     def get(self, request, scenario_id):
