@@ -1,6 +1,6 @@
 from django.urls import path
-from . import views
+from .views import SuspectsView
 
 urlpatterns = [
-    #path('', views.HistoriesView.as_view(), name='histories'),
+    path('', SuspectsView.as_view(), name='suspects'),
 ]
