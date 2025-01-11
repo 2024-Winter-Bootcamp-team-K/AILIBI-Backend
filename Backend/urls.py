@@ -47,4 +47,7 @@ urlpatterns = [
     path('suspects', include('suspect.urls')), # /suspects?scenario_id={scenarioId}
 
     path('suspects/<int:suspect_id>', include('suspect.suspect_urls')), # /suspects/{suspect_id}
+
+    path('evidences', include('evidence.urls')), # /evidences?scenario_id={scenarioId}, /evidences/{evidence_id}
+
 ]
