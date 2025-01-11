@@ -50,4 +50,6 @@ urlpatterns = [
 
     path('evidences', include('evidence.urls')), # /evidences?scenario_id={scenarioId}, /evidences/{evidence_id}
 
+    path('tts/', include('tts.urls')),
+
 ]
