@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.utils.timezone import now
 
 from .models import User
 from scenario.models import Scenario
@@ -138,6 +139,7 @@ class ScenariosView(APIView):
 
         # Update the note field with the provided note from the request
         scenario.note = request.data.get('note', scenario.note)
+        scenario.updated_at = now()
         scenario.save()
 
         return Response({"note": scenario.note}, status=status.HTTP_200_OK)
