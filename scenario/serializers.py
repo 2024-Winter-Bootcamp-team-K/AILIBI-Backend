@@ -3,17 +3,16 @@ from rest_framework import serializers
 from scenario.models import Scenario
 from suspect.models import Suspect
 from evidence.models import Evidence
-#Suspect
 
-class his_ScenarioSerializer(serializers.ModelSerializer):
+class His_ScenarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scenario
         fields = ['id', 'name', 'image', 'level', 'type', 'is_success']
 
-class his_SelectedScenarioSerializer(serializers.ModelSerializer):
+class His_SuspectSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Scenario
-        fields = ['name', 'location', 'datetime', 'type', 'description', 'image', 'level', 'note', 'is_success', 'count']
+        model = Suspect
+        fields = ['id', 'name', 'gender', 'age', 'job', 'personality', 'is_theif', 'image']
 
 class ScenarioSerializer(serializers.ModelSerializer):
     class Meta:
