@@ -42,5 +42,9 @@ urlpatterns = [
     path('scenarios/', include('llm.urls')),
 
     path('histories', include('scenario.urls')),  # /histories?user_id={userId}, /histories?scenario_id={scenarioId}, /histories?suspect_id={suspectId}, /histories?scenario_id={scenarioId}
-    path('scenarios/<int:scenario_id>/', include('scenario.scenario_urls')), # /scenarios/{scenario_id}, /scenarios/{scenario_id}
+    path('scenarios/<int:scenario_id>', include('scenario.scenario_urls')), # /scenarios/{scenario_id}, /scenarios/{scenario_id}
+
+    path('suspects', include('suspect.urls')), # /suspects?scenario_id={scenarioId}
+
+    path('suspects/<int:suspect_id>', include('suspect.suspect_urls')), # /suspects/{suspect_id}
 ]
