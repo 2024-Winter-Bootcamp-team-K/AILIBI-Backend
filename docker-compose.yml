@@ -19,7 +19,7 @@ services:
             - 8000
         depends_on:
             - PostgreSQL
-            - redis
+            - rabbitmq
         environment:
             DB_NAME: "${DB_NAME}"
             DB_USER: "${DB_USER}"
@@ -48,6 +48,31 @@ services:
         restart: always
         ports:
             - "6379:6379"
+
+    celery:
+        build: .
+        command: celery -A Backend worker --loglevel=info
+        depends_on:
+            - rabbitmq
+            - PostgreSQL
+        environment:
+            DB_NAME: "${DB_NAME}"
+            DB_USER: "${DB_USER}"
+            DB_PASSWORD: '${DB_PASSWORD}'
+            DB_HOST: '${DB_HOST}'
+            DB_PORT: '${DB_PORT}'
+            REDIS_HOST: redis
+            REDIS_PORT: 6379
+
+    rabbitmq:
+        image: rabbitmq:3-management
+        container_name: rabbitmq
+        ports:
+            - "5672:5672"  # RabbitMQ의 기본 포트
+            - "15672:15672"  # 관리 콘솔 포트
+        environment:
+            RABBITMQ_DEFAULT_USER: guest
+            RABBITMQ_DEFAULT_PASS: guest
 
 volumes:
   postgres_data:

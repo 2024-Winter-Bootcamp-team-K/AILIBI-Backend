@@ -26,8 +26,19 @@ except FileNotFoundError:
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = secret_data.get('SECRET_KEY', os.getenv('SECRET_KEY', 'fallback-secret-key'))
 
+#Naver Clova API Keys
 NAVER_CLIENT_ID = secret_data.get('NAVER_CLIENT_ID', os.getenv('NAVER_CLIENT_ID', 'fallback-client-id'))
 NAVER_CLIENT_SECRET = secret_data.get('NAVER_CLIENT_SECRET', os.getenv('NAVER_CLIENT_SECRET', 'fallback-client-secret'))
+
+#Elevenlabs API Keys
+ELEVENLABS_API_KEY = secret_data.get('ELEVENLABS_API_KEY', os.getenv('ELEVENLABS_API_KEY', 'fallback-api-key'))
+ELEVENLABS_MODEL_ID = secret_data.get('ELEVENLABS_MODEL_ID', os.getenv('ELEVENLABS_MODEL_ID', 'fallback-model-id'))
+# VOICE_IDS 설정 (우선순위: secret.json > .env > fallback)
+ELEVENLABS_VOICE_ID = secret_data.get('ELEVENLABS_VOICE_ID', {})
+
+# .env에서 VOICE_IDS를 덮어씌움
+for task_id in ELEVENLABS_VOICE_ID.keys():
+    ELEVENLABS_VOICE_ID[task_id] = os.getenv(f"TASK_{task_id}_VOICE_ID", ELEVENLABS_VOICE_ID[task_id])
 
 #yourproject/settings.py
 OPENAI_API_KEY = secret_data.get('OPENAI_API_KEY', os.getenv('OPENAI_API_KEY', 'your-openai-api-key'))
@@ -153,3 +164,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# RabbitMQ를 브로커로 사용
+CELERY_BROKER_URL = 'amqp://guest:guest@rabbitmq:5672//'
+
+# Redis를 결과 백엔드로 사용
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+
+# Celery 작업 데이터 직렬화 형식
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Seoul'
+
