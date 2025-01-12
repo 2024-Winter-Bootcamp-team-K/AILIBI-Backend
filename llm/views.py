@@ -1,4 +1,6 @@
 import json
+import re
+
 import redis
 import random
 from openai import OpenAI
@@ -94,6 +96,8 @@ def create_scenario(request):
             if debug:
                 print(f"시나리오 설명 : {scenario_description}\n")
 
+
+            """
             # DALL-E 시나리오 이미지 생성
             image_prompt = (
                 f"Generate an image for a deduction game using the image generation tool. "
@@ -123,6 +127,7 @@ def create_scenario(request):
 
             if debug:
                 print(f"사건 이미지 주소 : {scenario_image_url}\n")
+            """
 
             # Scenario 저장
             scenario = Scenario.objects.create(
@@ -132,7 +137,7 @@ def create_scenario(request):
                 type=event_type,
                 datetime=f"{year}-{month}-{day} {hour}:{minute}",
                 description=scenario_description,
-                image=scenario_image_url,
+                image="test.jpg",
                 level=2
             )
             scenario_id = scenario.id  # AutoField에서 ID 가져오기
@@ -173,7 +178,7 @@ def create_scenario(request):
                 if debug:
                     print(f"증거 이름 {i + 1}번 : {evidence_name}\n")
                     print(f"증거 설명 {i + 1}번 : {evidence_description}\n")
-
+                """
                 evidence_image_prompt = (
                     f"Generate an evidence image for a deduction game. "
                     f"Use the image generation tool to create an image of the evidence ({i + 1}) based on the following scenario, event type, and evidence description, all provided in Korean.\n\n"
@@ -194,26 +199,27 @@ def create_scenario(request):
 
                 if debug:
                     print(f"사건 이미지 주소 : {evidence_image_url}")
+                """
 
                 evidence = Evidence.objects.create(
                     scenario=scenario,
                     name=evidence_name,
                     description=evidence_description,
-                    image=evidence_image_url
+                    image="test.jpg"
                 )
                 evidence_list.append({
                     "id": evidence.id,
                     "name": evidence.name,
                     "description": evidence.description,
-                    "image": evidence.image
+                    "image": "test.jpg"
                 })
 
             # Suspect 생성
             suspect_list = []
             genders = [0, 0, 1]  # 0: 남성, 1: 여성
-            criminal_index = [0, 0, 1]  # 랜덤으로 범인 지정
+            criminal_index = [0, 0, 1]  # 0: 무고인, 1: 범인
             shuffle(genders)  # 남성 2명, 여성 1명으로 섞음
-            shuffle(criminal_index)
+            shuffle(criminal_index) # 범인과 무고인을 섞음
 
             for i in range(3):
                 criminal_select = criminal_index[i]
@@ -224,22 +230,18 @@ def create_scenario(request):
                     f"Event type: {event_type}\n"
                     f"Scenario: {scenario_description}\n\n"
                     f"Follow these constraints when generating the suspect:\n"
-                    f"1. Each suspect must have a name, gender, age, job, and a brief description of their relationship to the victim.\n"
-                    f"2. All suspects should be Korean and speak Korean.\n"
-                    f"3. The suspect's name must be a three-character Korean name.\n"
-                    f"4. The suspect's gender should be determined by the 'given number-gender': {gender_select}. "
-                    f"If it is 0, the suspect is male; if 1, the suspect is female.\n"
+                    f"1. Each suspect must have a name, job, and a description of their relationship to this scenario.\n"
+                    f"2. If 'variable' = 0 is provided next, name it masculine; if 'variable' = 1, name it feminine. "
+                    f"'variable' = {gender_select}\n"
+                    f"3. All suspects should be Korean and speak Korean.\n"
+                    f"4. The suspect's name must be a three-character Korean name.\n"
                     f"5. The job must be a real occupation, limited to 16 characters (VARCHAR(16)).\n"
-                    f"6. The personality should be based on their relationship to the victim and the incident.\n"
-                    f"7. Descriptions should be concise.\n"
-                    f"8. There is only one true culprit, with no accomplices.\n"
-                    f"9. The suspect's guilt is determined by 'Given number - criminal': {criminal_select}. "
-                    f"If it is 0, the suspect is not the culprit; if 1, they are the culprit.\n"
-                    f"10. Use the following format for the output:\n"
+                    f"6. The description should be based on their relationship to the victim and the incident.\n"
+                    f"7. There is only one true culprit, with no accomplices.\n"
+                    f"8. Use the following format for the output:\n"
                     f"Name:\n"
-                    f"Age:\n"
                     f"Job:\n"
-                    f"Personality:\n"
+                    f"description:\n"
                     f"Image URL:\n\n"
                     f"All output must be in Korean.\n\n"
                     f"Generate the suspect now."
@@ -257,16 +259,23 @@ def create_scenario(request):
                 else:
                     suspect_data = suspect_response.choices[0].message.content.split("\n")
 
+                if debug:
+                    print(f"suspect data : {suspect_data}\n")
+                    print(f"suspect data_type : {type(suspect_data)}\n")
+
                 try:
-                    suspect_name = suspect_data[0].split(":")[1].strip()  # 이름 추출
-                    if gender_select == 0:
+
+                    suspect_name = suspect_data[0].split(":")[1].strip()   # 이름 추출
+
+                    if gender_select == 0: # 남성
                         suspect_gender = False
-                    elif gender_select == 1:
+                    elif gender_select == 1: #여성
                         suspect_gender = True
 
-                    suspect_age = int(suspect_data[1].split(":")[1].strip()) #나이 추출
-                    suspect_job = suspect_data[2].split(":")[1].strip()  # 직업 추출
-                    suspect_description = suspect_data[3].split(":")[1].strip()  # 성격 추출
+                    suspect_age = random.randint(20, 39) #나이 선택
+
+                    suspect_job = suspect_data[1].split(":")[1].strip()  # 직업 추출
+                    suspect_description = suspect_data[2].split(":")[1].strip()  # 성격 추출
 
                     if criminal_select == 0: #진범 유/무
                         is_theif = False
@@ -274,10 +283,13 @@ def create_scenario(request):
                         is_theif = True
 
                 except (IndexError, ValueError) as e:
+                    if debug:
+                        print(f"e : {e}")
+
                     suspect_name = f"기본 이름 {i + 1}"
                     suspect_gender = False
                     suspect_job = "기본 직업"
-                    suspect_age = random.randint(20, 40)  # 기본 나이
+                    suspect_age = random.randint(20, 39)  # 기본 나이
                     suspect_description = "기본 설명"
                     is_theif = False
 
@@ -289,6 +301,7 @@ def create_scenario(request):
                     print(f"용의자 성격 : {suspect_description}")
                     print(f"범인 여부 : {is_theif}\n")
 
+                """
                 suspect_image_prompt = (
                     f"Generate an image of a suspect for a fictional deduction game scenario. "
                     f"Use the image generation tool to create {i + 1} image(s) of the suspect based on the following details, all provided in Korean.\n\n"
@@ -297,9 +310,9 @@ def create_scenario(request):
                     f"Gender: {suspect_gender}\n"
                     f"Age: {suspect_age}\n"
                     f"Job: {suspect_job}\n"
-                    f"Personality: {suspect_description}\n\n"
+                    f"description: {suspect_description}\n\n"
                     f"Create an image that visually represents the suspect based on these characteristics. "
-                    f"Ensure that the image accurately reflects the suspect's gender, age, job, and personality. "
+                    f"Ensure that the image accurately reflects the suspect's gender, age, job, and description. "
                     f"The suspect should appear to be Korean. "
                     f"Only one person's face should appear in the image, and only one face should be visible. "
                     f"Generate the image now."
@@ -314,6 +327,7 @@ def create_scenario(request):
 
                 if debug:
                     print(f"사건 이미지 주소 : {suspect_image_url}")
+                """
 
                 suspect = Suspect.objects.create(
                     scenario=scenario,
@@ -321,8 +335,9 @@ def create_scenario(request):
                     gender=suspect_gender,
                     age=suspect_age,
                     job=suspect_job,
+                    description= suspect_description,
                     is_theif=is_theif,
-                    image=suspect_image_url
+                    image="test.jpg" #suspect_image_url
                 )
                 suspect_list.append({
                     "id": suspect.id,
@@ -330,14 +345,15 @@ def create_scenario(request):
                     "gender": suspect_gender,
                     "age": suspect.age,
                     "job": suspect.job,
+                    "description" : suspect_description,
                     "is_theif": is_theif,
-                    "image": suspect.image
+                    "image": "test.jpg"
                 })
 
             return JsonResponse({
                 "scenario_id": scenario_id,
                 "scenario_description": scenario_description,
-                "scenario_image": scenario_image_url,
+                "scenario_image": "test.jpg",
                 "evidence": evidence_list,
                 "suspects": suspect_list
             }, status=201)
