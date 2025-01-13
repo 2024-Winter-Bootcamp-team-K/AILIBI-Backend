@@ -60,14 +60,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'channels',
-    'chat',
-    'llm',
+    'user',
     'scenario',
     'suspect',
     'evidence',
+    'llm',
+    'chat',
     'stt',
     'tts',
-    'user'
 ]
 
 MIDDLEWARE = [
@@ -176,3 +176,13 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Seoul'
 
+#Redis CACHES 설정
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}

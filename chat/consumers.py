@@ -1,12 +1,9 @@
 import json
 import logging
+from django.conf import settings
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django_redis import get_redis_connection
-from chat.models import Chat
-from suspect.models import Suspect
-from scenario.models import Scenario  # 시나리오 모델
 from openai import OpenAI
-from django.conf import settings
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
@@ -26,6 +23,7 @@ class MyConsumer(AsyncWebsocketConsumer):
     """
 
     async def connect(self):
+        logger.info("WebSocket connection request received.")
         """
         WebSocket 연결 시 호출.
         - `suspect_id`를 URL에서 추출합니다.
@@ -35,6 +33,7 @@ class MyConsumer(AsyncWebsocketConsumer):
         # URL에서 suspect_id 추출
         self.suspect_id = self.scope['url_route']['kwargs']['suspect_id']
         self.room_group_name = f'chat_{self.suspect_id}'
+        logger.info(f"Connecting to WebSocket with suspect_id: {self.suspect_id}")
 
         # Redis 캐시 초기화 (기존 대화 기록 삭제)
         cache_key = f'gptchat_suspect_{self.suspect_id}'
@@ -95,11 +94,9 @@ class MyConsumer(AsyncWebsocketConsumer):
             chat_history = redis_conn.lrange(cache_key, 0, -1) or []
             messages_history = [json.loads(msg) for msg in chat_history]
             messages_history.append({"role": "user", "content": user_message})  # 사용자 메시지 추가
-            messages_history.append({"role": "system", "content": self.initial_statement[self.suspect_id]})
-            #초기 진술 메시지 추가
 
             # GPT 응답 생성
-            prompt = self.create_prompt(self.suspect, messages_history)
+            prompt = self.create_prompt(self.suspect, messages_history, user_message)
             gpt_response = await self.get_gpt_response(prompt)
 
             # 대화 기록 저장 (캐시 형태로 저장 후 DB에 저장하는 방식도 고려)
@@ -119,7 +116,9 @@ class MyConsumer(AsyncWebsocketConsumer):
         """
         데이터베이스에서 용의자 정보를 조회합니다.
         """
+        from django.apps import apps  # Lazy Import 사용
         try:
+            Suspect = apps.get_model('suspect', 'Suspect')  # 문자열 참조로 Suspect 모델 가져오기
             suspect = Suspect.objects.get(pk=suspect_id)
             return {
                 "name": suspect.name,
@@ -128,9 +127,8 @@ class MyConsumer(AsyncWebsocketConsumer):
                 "job": suspect.job,
                 "description": suspect.description,
                 "is_thief": "범인" if suspect.is_thief else "무고한 시민",
-                "image": suspect.image,
-                "init_chat": suspect.init_chat #초기 진술 추가
-
+                "image": suspect.image.url if suspect.image else None,
+                "init_chat": suspect.init_chat  # 초기 진술 추가
             }
         except Suspect.DoesNotExist:
             logger.error(f"Suspect with ID {suspect_id} does not exist.")
@@ -142,7 +140,9 @@ class MyConsumer(AsyncWebsocketConsumer):
         """
         데이터베이스에서 시나리오 정보를 조회합니다.
         """
+        from django.apps import apps  # Lazy Import 사용
         try:
+            Scenario = apps.get_model('scenario', 'Scenario')  # 문자열 참조로 Scenario 모델 가져오기
             scenario = Scenario.objects.get(pk=scenario_id)
             return {
                 "name": scenario.name,
@@ -160,7 +160,9 @@ class MyConsumer(AsyncWebsocketConsumer):
         """
         사용자 메시지와 GPT 응답을 데이터베이스에 저장합니다.
         """
+        from django.apps import apps  # Lazy Import 사용
         try:
+            Chat = apps.get_model('chat', 'Chat')  # 문자열 참조로 Chat 모델 가져오기
             Chat.objects.create(
                 suspect_id=self.suspect_id,
                 user_chat=user_message,
