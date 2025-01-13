@@ -108,14 +108,44 @@ ASGI_APPLICATION = "Backend.asgi.application"
 
 WSGI_APPLICATION = 'Backend.wsgi.application'
 
+# Redis 호스트 이름 설정
+REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')  # 기본값: redis
+
+# Channels 설정
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)],
+            'hosts': [(REDIS_HOST, 6379)],
         },
     },
 }
+
+# Redis CACHES 설정
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{REDIS_HOST}:6379/0",  # f-string 사용
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+# Celery 결과 백엔드 설정
+CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:6379/0'  # f-string 사용
+
+
+# RabbitMQ를 브로커로 사용
+CELERY_BROKER_URL = 'amqp://guest:guest@rabbitmq:5672//'
+
+# Redis를 결과 백엔드로 사용
+CELERY_RESULT_BACKEND = 'redis://{REDIS_HOST}:6379/0'
+
+# Celery 작업 데이터 직렬화 형식
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Seoul'
 
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
 
@@ -259,24 +289,3 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# RabbitMQ를 브로커로 사용
-CELERY_BROKER_URL = 'amqp://guest:guest@rabbitmq:5672//'
-
-# Redis를 결과 백엔드로 사용
-CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
-
-# Celery 작업 데이터 직렬화 형식
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Asia/Seoul'
-
-#Redis CACHES 설정
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/0",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
-    }
-}
