@@ -87,7 +87,7 @@ class MyConsumer(AsyncWebsocketConsumer):
             logger.info(f"Received message: {data}")
 
             # 메시지 처리 로직 호출
-            response = self.handle_message(data)
+            response = await self.handle_message(data)
 
             # 정상적인 응답 전송
             await self.send(json.dumps({
