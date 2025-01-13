@@ -33,6 +33,7 @@ class MyConsumer(AsyncWebsocketConsumer):
         # URL에서 suspect_id 추출
         self.suspect_id = self.scope['url_route']['kwargs']['suspect_id']
         self.room_group_name = f'chat_{self.suspect_id}'
+        logger.info(f"Connecting to WebSocket with suspect_id: {self.suspect_id}")
 
         # Redis 캐시 초기화 (기존 대화 기록 삭제)
         cache_key = f'gptchat_suspect_{self.suspect_id}'

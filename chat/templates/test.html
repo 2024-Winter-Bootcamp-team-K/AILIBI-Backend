@@ -5,61 +5,113 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebSocket Chat Test</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        #chat-log { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
-        #chat-input { width: calc(100% - 50px); margin-right: 10px; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #messages {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        #status {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        #input-container {
+            display: flex;
+        }
+        #input-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        #input-container button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        #input-container button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
-    <h1>용의자 심문 테스트</h1>
-    <div id="chat-log"></div>
-    <input id="chat-input" type="text" placeholder="메시지를 입력하세요" />
-    <button id="send-button">보내기</button>
+    <h1>WebSocket Chat Test</h1>
+    <div id="status">Status: <span id="connectionStatus">Disconnected</span></div>
+    <div id="messages"></div>
+
+    <div id="input-container">
+        <input type="text" id="messageInput" placeholder="Type your message here..." disabled>
+        <button id="sendButton" onclick="sendMessage()" disabled>Send</button>
+    </div>
 
     <script>
-        const suspectId = 1; // 테스트할 용의자 ID
-        const chatLog = document.getElementById("chat-log");
-        const chatInput = document.getElementById("chat-input");
-        const sendButton = document.getElementById("send-button");
+        const suspectId = 14;  // 테스트할 suspectId (필요에 따라 변경)
+        const socket = new WebSocket(`ws://${window.location.host}/ws/chat/${suspectId}/`);
+        const connectionStatus = document.getElementById('connectionStatus');
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
 
-        // WebSocket 연결 설정
-        const ws = new WebSocket(`ws://${window.location.host}/ws/chat/${suspectId}/`);
-
-        // 서버에서 메시지를 받을 때 처리
-        ws.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            const message = data.message;
-            const newMessage = document.createElement("p");
-            newMessage.textContent = `GPT: ${message}`;
-            chatLog.appendChild(newMessage);
-            chatLog.scrollTop = chatLog.scrollHeight; // 스크롤 하단으로 이동
+        // WebSocket 연결 성공
+        socket.onopen = () => {
+            connectionStatus.textContent = 'Connected';
+            connectionStatus.style.color = 'green';
+            messageInput.disabled = false;
+            sendButton.disabled = false;
+            displayMessage('System: WebSocket connection established.');
         };
 
-        // 서버와 연결될 때
-        ws.onopen = function() {
-            const systemMessage = document.createElement("p");
-            systemMessage.textContent = "WebSocket 연결이 성공했습니다.";
-            chatLog.appendChild(systemMessage);
+        // WebSocket 메시지 수신
+        socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                displayMessage(`Server: ${data.message}`);
+            } catch (e) {
+                displayMessage('Error: Received non-JSON message.');
+            }
         };
 
-        // WebSocket 연결이 닫혔을 때
-        ws.onclose = function() {
-            const systemMessage = document.createElement("p");
-            systemMessage.textContent = "WebSocket 연결이 닫혔습니다.";
-            chatLog.appendChild(systemMessage);
+        // WebSocket 연결 종료
+        socket.onclose = () => {
+            connectionStatus.textContent = 'Disconnected';
+            connectionStatus.style.color = 'red';
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+            displayMessage('System: WebSocket connection closed.');
         };
 
-        // 메시지를 보낼 때
-        sendButton.onclick = function() {
-            const message = chatInput.value;
-            if (message.trim() === "") return; // 빈 메시지는 무시
-            ws.send(JSON.stringify({ message }));
-            const newMessage = document.createElement("p");
-            newMessage.textContent = `사용자: ${message}`;
-            chatLog.appendChild(newMessage);
-            chatInput.value = ""; // 입력 필드 초기화
-            chatLog.scrollTop = chatLog.scrollHeight; // 스크롤 하단으로 이동
+        // WebSocket 오류 처리
+        socket.onerror = (error) => {
+            connectionStatus.textContent = 'Error';
+            connectionStatus.style.color = 'orange';
+            displayMessage('System: WebSocket error occurred.');
         };
+
+        // 메시지 전송
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                socket.send(JSON.stringify({ message }));
+                displayMessage(`You: ${message}`);
+                messageInput.value = '';
+            }
+        }
+
+        // 메시지 화면에 표시
+        function displayMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
     </script>
 </body>
 </html>

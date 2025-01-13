@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
-def test_chat_view(request):
+def websocket_test(request):
     """
-    WebSocket 테스트용 HTML 템플릿 렌더링.
+    WebSocket 테스트 페이지를 렌더링합니다.
     """
-    return render(request, 'test.html')
+    return render(request, "test.html")

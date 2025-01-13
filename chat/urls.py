@@ -1,7 +1,7 @@
 from django.urls import path
-from django.views.generic import TemplateView
+from .views import websocket_test
 
 urlpatterns = [
-    # 테스트용 HTML 파일을 보여주는 뷰 연결
-    path('chat/', TemplateView.as_view(template_name="test.html"), name='chat'),
+    # WebSocket 테스트용 URL
+    path("test-websocket/", websocket_test, name="websocket_test"),
 ]
