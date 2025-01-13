@@ -180,7 +180,7 @@ LOGGING = {
             'level': 'INFO',
             'filters': ['require_debug_true'],
             'class': 'logging.FileHandler',
-            'filename': 'logs/django.log'
+            'filename': 'django.log'
         },
         'mail_admins': {
             'level': 'ERROR',
