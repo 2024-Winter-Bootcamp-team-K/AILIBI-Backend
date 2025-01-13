@@ -6,6 +6,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 @csrf_exempt  # 이 함수에서는 CSRF 검사를 생략
 def stt_process(request):
@@ -29,6 +33,7 @@ def stt_process(request):
 
             if not base64_audio_data:
                 # 오디오 데이터가 없으면 에러 메시지 반환
+                logger.error(f"user/views.py/stt_process - error: No audio data provided")
                 return JsonResponse({'error': 'No audio data provided'}, status=400)
 
             # 2. BASE64 데이터를 디코딩하여 임시 오디오 파일로 저장
@@ -60,22 +65,27 @@ def stt_process(request):
                 # API 요청 성공 시 결과 반환
                 result = response.json()  # JSON 응답을 파싱
                 text = result.get('text', '')
+                logger.info(f"user/views.py/stt_process - text:, {text}")
                 return JsonResponse({'text': text}, json_dumps_params={'ensure_ascii': False})
                 # 유니코드 이스케이프 문자열 대신 한글 텍스트로 반환.
             else:
                 # API 요청 실패 시 오류 메시지 반환
+                logger.error(f"user/views.py/stt_process - error: {response.text}")
                 return JsonResponse({'error': response.text}, status=response.status_code)
 
         except json.JSONDecodeError:
             # 4. 요청 데이터가 JSON이 아닌 경우 처리
+            logger.error(f"user/views.py/stt_process - error: Invalid JSON data")
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
 
         except base64.binascii.Error:
             # 5. BASE64 디코딩 실패 처리
+            logger.error(f"user/views.py/stt_process - error: Invalid BASE64 data")
             return JsonResponse({'error': 'Invalid BASE64 data'}, status=400)
 
         except Exception as e:
             # 6. 기타 예상하지 못한 예외 처리
+            logger.exception(f"user/views.py/stt_process - error: {e}")
             return JsonResponse({'error': str(e)}, status=500)
 
         finally:
@@ -84,4 +94,5 @@ def stt_process(request):
                 os.remove(audio_file_path)  # 파일 삭제
 
     # 8. POST 요청이 아닌 경우 처리
+    logger.error(f"user/views.py/stt_process - error: Invalid request method")
     return JsonResponse({'error': 'Invalid request method'}, status=405)

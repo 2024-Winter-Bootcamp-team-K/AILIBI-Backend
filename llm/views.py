@@ -11,6 +11,10 @@ from evidence.models import Evidence
 from suspect.models import Suspect
 from random import shuffle
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # Redis 클라이언트 설정
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
@@ -40,6 +44,7 @@ def create_scenario(request):
             # user_id 가져오기
             user_id = data.get("user_id")
             if not user_id:
+                logger.error(f"llm/views.py/create_scenario - error : user_id가 제공되지 않았습니다.")
                 return JsonResponse({"error": "user_id가 제공되지 않았습니다."}, status=400)
 
             # 사용자 입력 데이터 가져오기
@@ -53,6 +58,7 @@ def create_scenario(request):
 
             # 필수 필드 검증
             if not (year and month and day and hour and minute and location and event_type):
+                logger.error(f"llm/views.py/create_scenario - error : Year, month, day, hour, minute, location, and event_type must be provided.")
                 return JsonResponse({"error": "Year, month, day, hour, minute, location, and event_type must be provided."}, status=502)
 
             if debug:
@@ -88,6 +94,7 @@ def create_scenario(request):
                 print(f"GPT Responce : {gpt_response}\n")
 
             if not gpt_response.choices or not gpt_response.choices[0].message.content:
+                logger.error(f"llm/views.py/create_scenario - error: 시나리오 설명 오류 발생. {user_id}")
                 scenario_description = "시나리오 설명 오류 발생."
             else:
                 scenario_description = gpt_response.choices[0].message.content
@@ -372,6 +379,7 @@ def create_scenario(request):
                     "image": "test.jpg"
                 })
 
+            logger.info(f"llm/views.py/create_scenario - 시나리오 생성 완료: {scenario_id}")
             return JsonResponse({
                 "scenario_id": scenario_id,
                 "scenario_description": scenario_description,
@@ -381,6 +389,8 @@ def create_scenario(request):
             }, status=201)
 
         except Exception as e:
+            logger.exception(f"llm/views.py/create_scenario - 예외 발생 : {e}")
             return JsonResponse({"error": str(e)}, status=500)
 
+    logger.error(f"llm/views.py/create_scenario - error : Invalid request method")
     return JsonResponse({"error": "Invalid request method"}, status=502)

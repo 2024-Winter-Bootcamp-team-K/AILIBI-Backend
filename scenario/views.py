@@ -12,6 +12,10 @@ from evidence.models import Evidence
 
 from .serializers import His_ScenarioSerializer, His_SuspectSerializer, ScenarioSerializer, SuspectSerializer, EvidenceSerializer
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class HistoriesView(APIView):
     def get(self, request):
         user_id = request.query_params.get('user_id')           #모든 플레이 기록 불러오기
@@ -22,6 +26,7 @@ class HistoriesView(APIView):
             user = get_object_or_404(User, id=user_id)
             scenarios = Scenario.objects.filter(user_id=user.id)
             serializer = His_ScenarioSerializer(scenarios, many=True)
+            logger.info(f"scenario/views.py/HistoriesView - error: Invalid JSON data")
             return Response({"scenarios": serializer.data}, status=status.HTTP_200_OK)
 
         elif scenario_id:
@@ -30,6 +35,7 @@ class HistoriesView(APIView):
             scenario = Scenario.objects.filter(id=scenario_id).first()
 
             if not scenario:
+                logger.error(f"scenario/views.py/HistoriesView - error: Scenario not found")
                 return Response({"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND)
 
             # Suspects 정보 가져오기
@@ -58,6 +64,7 @@ class HistoriesView(APIView):
                 "evidences": evidence_data
             }
 
+            logger.info(f"user/views.py/HistoriesView - resopnce_ok: {response_data}")
             return Response(response_data, status=status.HTTP_200_OK)
 
         elif suspect_id:
@@ -81,6 +88,7 @@ class HistoriesView(APIView):
                 ]
             }
 
+            logger.info(f"user/views.py/HistoriesView - resopnce_ok: {response_data}")
             return Response(response_data, status=status.HTTP_200_OK)
 
         else:
@@ -92,14 +100,16 @@ class HistoriesView(APIView):
         if scenario_id:
             suspect_ids = Suspect.objects.filter(scenario_id=scenario_id).values_list('id', flat=True)
 
-            Scenario.objects.filter(id=scenario_id).delete()
-            Evidence.objects.filter(scenario_id=scenario_id).delete()
-            Suspect.objects.filter(scenario_id=scenario_id).delete()
-            Chat.objects.filter(suspect_id__in=suspect_ids).delete()
+            Scenario.objects.filter(id=scenario_id).update(is_deleted=True)
+            Scenario.objects.filter(scenario_id=scenario_id).update(is_deleted=True)
+            Scenario.objects.filter(scenario_id=scenario_id).update(is_deleted=True)
+            Scenario.objects.filter(suspect__ids=scenario_id).update(is_deleted=True)
 
+            logger.info(f"user/views.py/HistoriesView - Delete Scenario: {scenario_id}")
             return Response({'message': '삭제 되었습니다.'},
                             status=status.HTTP_200_OK)
 
+        logger.error(f"user/views.py/HistoriesView - error: scenario_id is required for deletion")
         return Response({'error': 'scenario_id is required for deletion'}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -125,9 +135,11 @@ class ScenariosView(APIView):
                 'evidences': evidences_data
             }
 
+            logger.info(f"user/views.py/ScenariosView - 200_OK : {response_data}")
             return Response(response_data, status=status.HTTP_200_OK)
 
         except Scenario.DoesNotExist:
+            logger.error(f"user/views.py/HistoriesView - error: Scenario not found")
             return Response({"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND)\
 
 
@@ -135,6 +147,7 @@ class ScenariosView(APIView):
         try:
             scenario = Scenario.objects.get(id=scenario_id)
         except Scenario.DoesNotExist:
+            logger.error(f"user/views.py/HistoriesView - error: Scenario not found")
             return Response({"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # Update the note field with the provided note from the request
@@ -142,4 +155,5 @@ class ScenariosView(APIView):
         scenario.updated_at = now()
         scenario.save()
 
+        logger.info(f"user/views.py/ScenariosView - note : {scenario.note}")
         return Response({"note": scenario.note}, status=status.HTTP_200_OK)

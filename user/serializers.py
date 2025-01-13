@@ -1,6 +1,9 @@
+import logging
 import bcrypt
 from rest_framework import serializers
 from .models import User
+
+logger = logging.getLogger(__name__)
 
 #비밀번호 해싱 및 솔트
 def hash_password(password):
@@ -26,11 +29,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
+            logger.warning(f"user/serializers.py/UserSerializer/validate_email - Email validation failed: {value} is already registered.")
             raise serializers.ValidationError("이미 가입한 이메일입니다.")
         return value
 
     def validate(self, data):
         if data['password'] != data['password_check']:
+            logger.warning("user/serializers.py/UserSerializer/validate - Password validation failed: passwords do not match.")
             raise serializers.ValidationError({"password_check": "비밀번호가 일치하지 않습니다."})
         return data
 
@@ -54,9 +59,12 @@ class LoginSerializer(serializers.Serializer):
         try:
             user = User.objects.get(email=email)
             if not check_password(password, user.password):
+                logger.warning(f"user/serializers.py/LoginSerializer/validate -  Incorrect password : {email}")
                 raise serializers.ValidationError("잘못된 비밀번호입니다.")
             if user.is_deleted:
+                logger.warning(f"user/serializers.py/LoginSerializer/validate -  Deleted User : {email}")
                 raise serializers.ValidationError("삭제된 사용자입니다.")
             return data
         except User.DoesNotExist:
+            logger.warning(f"user/serializers.py/LoginSerializer/validate -  Incorrect User : {email}")
             raise serializers.ValidationError("존재하지 않는 아이디입니다.")
