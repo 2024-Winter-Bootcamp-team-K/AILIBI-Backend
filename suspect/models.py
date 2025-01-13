@@ -20,6 +20,7 @@ class Suspect(models.Model):
     age = models.IntegerField(null=False)
     job = models.CharField(max_length=16, null=False)
     description = models.CharField(max_length=512, null=False)
+    init_chat = models.TextField(blank=True)
     is_theif = models.BooleanField(choices=THEIF_CHOICES, null=False)
     image = models.CharField(max_length=512, null=False)
     created_at = models.DateTimeField(auto_now_add=True, null=False)

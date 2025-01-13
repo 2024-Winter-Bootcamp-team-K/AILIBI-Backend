@@ -1,5 +1,4 @@
 import json
-import re
 
 import redis
 import random
@@ -27,7 +26,7 @@ def create_scenario(request):
 
 
     #디버그 옵션
-    debug = True
+    debug = False
 
 
     if request.method == "POST":
@@ -144,7 +143,12 @@ def create_scenario(request):
 
             # Evidence 생성
             evidence_list = []
+            evidence_name_last = []
             for i in range(int(data.get("evidence_count", 2))):
+
+                if debug:
+                    print(f"evidence_name_last : {evidence_name_last}\n")
+
                 evidence_prompt = (
                     f"Generate a piece of evidence for a deduction game. "
                     f"Create one piece of evidence ({i + 1}) that matches the following event type and scenario. The output should be in Korean.\n\n"
@@ -154,13 +158,22 @@ def create_scenario(request):
                     f"1. It should be relevant to the incident described.\n"
                     f"2. The evidence name should be concise, with a maximum length of 16 characters (VARCHAR(16)).\n"
                     f"3. Provide a brief description of the evidence.\n"
-                    f"4. All output must be in Korean.\n"
-                    f"5. Use the following format for the output:\n"
+                    f"4. All output must be in Korean.\n")
+
+                if i == 0:
+                    evidence_prompt += f"5. Use the following format for the output:\n"
+                else:
+                    for j in evidence_name_last:
+                        evidence_prompt += (f"5. Do not generate evidence such as the following: {j}\n"
+                                            f"6. Use the following format for the output:\n")
+
+                evidence_prompt += (
                     f"Name:\n"
                     f"Description:\n"
                     f"Image URL:\n\n"
                     f"Generate the evidence now."
                 )
+
                 evidence_response = client.chat.completions.create(
                     model="gpt-4",
                     messages=[{"role": "user", "content": evidence_prompt}]
@@ -201,6 +214,8 @@ def create_scenario(request):
                     print(f"사건 이미지 주소 : {evidence_image_url}")
                 """
 
+                evidence_name_last.append(evidence_name)
+
                 evidence = Evidence.objects.create(
                     scenario=scenario,
                     name=evidence_name,
@@ -237,11 +252,13 @@ def create_scenario(request):
                     f"4. The suspect's name must be a three-character Korean name.\n"
                     f"5. The job must be a real occupation, limited to 16 characters (VARCHAR(16)).\n"
                     f"6. The description should be based on their relationship to the victim and the incident.\n"
-                    f"7. There is only one true culprit, with no accomplices.\n"
-                    f"8. Use the following format for the output:\n"
+                    f"7. Generate an initial statement from the suspect based on the description of the suspect you created.\n"
+                    f"8. There is only one true culprit, with no accomplices.\n"
+                    f"9. Use the following format for the output:\n"
                     f"Name:\n"
                     f"Job:\n"
                     f"description:\n"
+                    f"initial_statement:\n"
                     f"Image URL:\n\n"
                     f"All output must be in Korean.\n\n"
                     f"Generate the suspect now."
@@ -276,6 +293,7 @@ def create_scenario(request):
 
                     suspect_job = suspect_data[1].split(":")[1].strip()  # 직업 추출
                     suspect_description = suspect_data[2].split(":")[1].strip()  # 성격 추출
+                    suspect_initial_statement = suspect_data[3].split(":")[1].strip()  #초기 진술 추출
 
                     if criminal_select == 0: #진범 유/무
                         is_theif = False
@@ -284,7 +302,7 @@ def create_scenario(request):
 
                 except (IndexError, ValueError) as e:
                     if debug:
-                        print(f"e : {e}")
+                        print(f"e : {e}\n")
 
                     suspect_name = f"기본 이름 {i + 1}"
                     suspect_gender = False
@@ -299,6 +317,7 @@ def create_scenario(request):
                     print(f"용의자 나이 : {suspect_age}")
                     print(f"용의자 직업 : {suspect_job}")
                     print(f"용의자 성격 : {suspect_description}")
+                    print(f"용의자 초기 진술 : {suspect_initial_statement}")
                     print(f"범인 여부 : {is_theif}\n")
 
                 """
@@ -336,9 +355,11 @@ def create_scenario(request):
                     age=suspect_age,
                     job=suspect_job,
                     description= suspect_description,
+                    init_chat= suspect_initial_statement,
                     is_theif=is_theif,
                     image="test.jpg" #suspect_image_url
                 )
+
                 suspect_list.append({
                     "id": suspect.id,
                     "name": suspect.name,
@@ -346,6 +367,7 @@ def create_scenario(request):
                     "age": suspect.age,
                     "job": suspect.job,
                     "description" : suspect_description,
+                    "init_chat" : suspect_initial_statement,
                     "is_theif": is_theif,
                     "image": "test.jpg"
                 })
