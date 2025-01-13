@@ -52,4 +52,5 @@ urlpatterns = [
 
     path('tts/', include('tts.urls')),
 
+    path('chat/', include('chat.urls')),
 ]

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #chat-log { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
+        #chat-input { width: calc(100% - 50px); margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <h1>용의자 심문 테스트</h1>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="메시지를 입력하세요" />
+    <button id="send-button">보내기</button>
+
+    <script>
+        const suspectId = 1; // 테스트할 용의자 ID
+        const chatLog = document.getElementById("chat-log");
+        const chatInput = document.getElementById("chat-input");
+        const sendButton = document.getElementById("send-button");
+
+        // WebSocket 연결 설정
+        const ws = new WebSocket(`ws://${window.location.host}/ws/chat/${suspectId}/`);
+
+        // 서버에서 메시지를 받을 때 처리
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            const message = data.message;
+            const newMessage = document.createElement("p");
+            newMessage.textContent = `GPT: ${message}`;
+            chatLog.appendChild(newMessage);
+            chatLog.scrollTop = chatLog.scrollHeight; // 스크롤 하단으로 이동
+        };
+
+        // 서버와 연결될 때
+        ws.onopen = function() {
+            const systemMessage = document.createElement("p");
+            systemMessage.textContent = "WebSocket 연결이 성공했습니다.";
+            chatLog.appendChild(systemMessage);
+        };
+
+        // WebSocket 연결이 닫혔을 때
+        ws.onclose = function() {
+            const systemMessage = document.createElement("p");
+            systemMessage.textContent = "WebSocket 연결이 닫혔습니다.";
+            chatLog.appendChild(systemMessage);
+        };
+
+        // 메시지를 보낼 때
+        sendButton.onclick = function() {
+            const message = chatInput.value;
+            if (message.trim() === "") return; // 빈 메시지는 무시
+            ws.send(JSON.stringify({ message }));
+            const newMessage = document.createElement("p");
+            newMessage.textContent = `사용자: ${message}`;
+            chatLog.appendChild(newMessage);
+            chatInput.value = ""; // 입력 필드 초기화
+            chatLog.scrollTop = chatLog.scrollHeight; // 스크롤 하단으로 이동
+        };
+    </script>
+</body>
+</html>
