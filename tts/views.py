@@ -8,6 +8,10 @@ from celery.result import AsyncResult
 from django.conf import settings
 from .tasks import process_tts
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class ChangeSoundView(APIView):
     """
     TTS 작업 생성 및 결과 반환 API
@@ -23,10 +27,12 @@ class ChangeSoundView(APIView):
 
         # 입력 검증
         if not sentence or not task_id:
+            logger.warning(f"tts/views.py/ChangeSoundView - Sentence and task_id are required")
             return Response({"error": "Sentence and task_id are required"}, status=status.HTTP_400_BAD_REQUEST)
 
         # task_id가 고정된 값인지 확인
         if task_id not in settings.ELEVENLABS_VOICE_ID:
+            logger.warning(f"tts/views.py/ChangeSoundView - Invalid task_id. Allowed task_ids: {list(settings.ELEVENLABS_VOICE_ID.keys())}")
             return Response({"error": f"Invalid task_id. Allowed task_ids: {list(settings.ELEVENLABS_VOICE_ID.keys())}"},
                             status=status.HTTP_400_BAD_REQUEST)
 
@@ -41,6 +47,7 @@ class ChangeSoundView(APIView):
         # Celery 작업 생성 (고정된 task_id 사용)
         task = process_tts.apply_async(args=[sentence, voice_id], task_id=task_id)
 
+        logger.info(f"tts/views.py/ChangeSoundView - Allowed task_ids. {task_id}")
         return Response({"task_id": task.id}, status=status.HTTP_202_ACCEPTED)
 
 
@@ -61,10 +68,13 @@ class GetAudioResultView(APIView):
             if result.successful():
                 # 작업 성공: Base64 데이터 반환
                 audio_base64 = result.result
+                logger.info(f"tts/views.py/GetAudioResultView - status:SUCCESS / audio_base64:{audio_base64}")
                 return Response({"status": "SUCCESS", "audio_base64": audio_base64}, status=status.HTTP_200_OK)
 
             # 작업 실패
+            logger.warning(f"tts/views.py/GetAudioResultView - error : Task Failed.")
             return Response({"error": "Task failed"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # 작업이 진행 중인 경우
+        logger.warning(f"tts/views.py/GetAudioResultView - status : PENDING")
         return Response({"status": "PENDING"}, status=status.HTTP_202_ACCEPTED)
