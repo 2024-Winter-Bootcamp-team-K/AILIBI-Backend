@@ -263,7 +263,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CELERY_BROKER_URL = 'amqp://guest:guest@rabbitmq:5672//'
 
 # Redis를 결과 백엔드로 사용
-CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 
 # Celery 작업 데이터 직렬화 형식
 CELERY_ACCEPT_CONTENT = ['json']
@@ -274,7 +274,7 @@ CELERY_TIMEZONE = 'Asia/Seoul'
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/0",
+        "LOCATION": "redis://127.0.0.1:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
