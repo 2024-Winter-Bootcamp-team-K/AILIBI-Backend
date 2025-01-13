@@ -4,6 +4,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from django_redis import get_redis_connection
 from chat.models import Chat
 from suspect.models import Suspect
+from scenario.models import Scenario  # 시나리오 모델
 from openai import OpenAI
 from django.conf import settings
 
@@ -45,8 +46,8 @@ class MyConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        # 초기 진술 불러오기 (init_chat 추가되면 수정예정)
-        #initial_statement = self.suspect.get('init_chat', "현재 이 용의자는 초기 진술이 없습니다.")
+        # 초기 진술 불러오기
+        initial_statement = self.suspect.get('init_chat', "현재 이 용의자는 초기 진술이 없습니다.")
 
         # 그룹에 사용자 추가 (다중 사용자 지원)
         await self.channel_layer.group_add(
@@ -56,17 +57,10 @@ class MyConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
         # 초기 메시지 클라이언트로 전송
-        # 초기 메시지는 suspect table에 init_chat 만들어서 초기 진술을 저장한 다음 초기 진술을 불러올예정
         await self.send(json.dumps({
-            "message": f"용의자 {self.suspect['name']}의 심문을 시작합니다.",
+            "message": f"용의자 {self.suspect['name']}의 심문을 시작합니다.\n초기 진술: {initial_statement}",
             "suspect": self.suspect
         }))
-
-        # 초기 메시지 클라이언트로 전송(init_chat 추가시 수정 예정
-        #await self.send(json.dumps({
-        #    "message": f"용의자 {self.suspect['name']}와의 대화를 시작합니다.\n초기 진술: {initial_statement}",
-        #    "suspect": self.suspect
-        #}))
 
 
 
@@ -85,6 +79,7 @@ class MyConsumer(AsyncWebsocketConsumer):
             logger.error(f"Error during WebSocket disconnect: {str(e)}")
 
 
+
     async def receive(self, text_data):
         """
         클라이언트 메시지 수신 시 호출.
@@ -93,19 +88,21 @@ class MyConsumer(AsyncWebsocketConsumer):
         try:
             # JSON 형식으로 메시지 파싱
             data = json.loads(text_data)
-            user_message = data.get('message')
+            user_message = data.get('message', '')
 
             # Redis에서 대화 히스토리 로드
             cache_key = f'gptchat_suspect_{self.suspect_id}'
             chat_history = redis_conn.lrange(cache_key, 0, -1) or []
             messages_history = [json.loads(msg) for msg in chat_history]
             messages_history.append({"role": "user", "content": user_message})  # 사용자 메시지 추가
+            messages_history.append({"role": "system", "content": self.initial_statement[self.suspect_id]})
+            #초기 진술 메시지 추가
 
             # GPT 응답 생성
             prompt = self.create_prompt(self.suspect, messages_history)
             gpt_response = await self.get_gpt_response(prompt)
 
-            # 대화 기록 저장
+            # 대화 기록 저장 (캐시 형태로 저장 후 DB에 저장하는 방식도 고려)
             await self.save_chat_message(user_message, gpt_response)
 
             # 클라이언트로 GPT 응답 전송
@@ -115,6 +112,8 @@ class MyConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"Error in receive: {str(e)}")
             await self.send(json.dumps({'error': 'Internal server error'}))
+
+
 
     def get_suspect_info(self, suspect_id):
         """
@@ -129,12 +128,33 @@ class MyConsumer(AsyncWebsocketConsumer):
                 "job": suspect.job,
                 "description": suspect.description,
                 "is_thief": "범인" if suspect.is_thief else "무고한 시민",
-                "image": suspect.image
-                #"init_chat": suspect.init_chat 초기 진술 추가 (수정 예정)
+                "image": suspect.image,
+                "init_chat": suspect.init_chat #초기 진술 추가
+
             }
         except Suspect.DoesNotExist:
             logger.error(f"Suspect with ID {suspect_id} does not exist.")
             return None
+
+
+
+    def get_scenario_info(self, scenario_id):
+        """
+        데이터베이스에서 시나리오 정보를 조회합니다.
+        """
+        try:
+            scenario = Scenario.objects.get(pk=scenario_id)
+            return {
+                "name": scenario.name,
+                "description": scenario.description,
+                "location": scenario.location,
+                "datetime": scenario.datetime,
+            }
+        except Scenario.DoesNotExist:
+            logger.error(f"Scenario with ID {scenario_id} does not exist.")
+            return None
+
+
 
     async def save_chat_message(self, user_message, gpt_response):
         """
@@ -149,23 +169,40 @@ class MyConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"Error saving chat message: {str(e)}")
 
+
+
     # 프롬프트는 좀더 고민해보고 진행 예정
-    def create_prompt(self, suspect, history):
+    def create_prompt(self, suspect, scenario, history, user_message):
         """
-        GPT 프롬프트를 생성합니다.
-        - 용의자 정보와 대화 히스토리를 기반으로 작성합니다.
+        LLM이 생성한 데이터를 기반으로 GPT 프롬프트를 생성합니다.
+        - 프롬프트를 한국어로 작성하여 LLM이 한국어로 응답하도록 유도.
         """
-        evidence = suspect.get('description', 'No evidence provided.')
+        # 증거 정리
+        evidence_list = "\n- ".join(suspect.get("evidence", []))
+
+        # 용의자가 범인인지 여부에 따라 목표 설정
+        goal = "당신의 무죄를 설득력 있게 주장하고, 범죄와 관련된 혐의를 피하십시오." \
+            if not suspect["is_thief"] else \
+            "혐의를 완전히 인정하지 않으면서 의심을 다른 곳으로 돌리십시오."
+
+        # 프롬프트 템플릿 생성
         prompt = f"""
-        You are {suspect['name']}, a suspect with the following traits:
-        Gender: {suspect['gender']}
-        Age: {suspect['age']}
-        Job: {suspect['job']}
-        Description: {suspect['description']}
-        Evidence: {evidence}
-        {history[-1]['content']}
-        """
+    당신은 {suspect['name']}입니다. 나이는 {suspect['age']}세이고, 성별은 {suspect['gender']}입니다.
+    직업은 {suspect['job']}이며, 성격은 다음과 같습니다: "{suspect['description']}".
+    현재 {scenario['location']}에서 {scenario['datetime']}에 발생한 사건에 대해 심문을 받고 있습니다.
+
+    다음은 당신에게 제시된 증거입니다:
+    - {evidence_list}
+
+    심문관이 방금 당신에게 다음과 같이 물었습니다: "{user_message}"
+    당신의 목표는 {goal}
+
+    모든 응답은 한국어로 작성하세요.
+    직접적으로 범인이냐고 묻는 질문에는 무조건적으로 혐의를 부인하세요.
+    """
         return prompt
+
+
 
     async def get_gpt_response(self, prompt):
         """
