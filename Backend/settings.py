@@ -139,9 +139,6 @@ CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:6379/0'  # f-string 사용
 # RabbitMQ를 브로커로 사용
 CELERY_BROKER_URL = 'amqp://guest:guest@rabbitmq:5672//'
 
-# Redis를 결과 백엔드로 사용
-CELERY_RESULT_BACKEND = 'redis://{REDIS_HOST}:6379/0'
-
 # Celery 작업 데이터 직렬화 형식
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
