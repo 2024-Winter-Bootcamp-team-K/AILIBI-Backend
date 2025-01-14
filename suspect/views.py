@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 class SuspectsView(APIView):
     @swagger_auto_schema(
-        operation_description="시나리오 ID로 용의자 목록 조회",
+        operation_id= "시나리오 ID로 용의자 목록 조회",
+        operation_description="{scenario_id}에 속한 모든 용의자 불러오기",
         manual_parameters=[
             openapi.Parameter(
                 'scenario_id', openapi.IN_QUERY,
@@ -61,7 +62,8 @@ class SuspectsView(APIView):
 class SuspectDetailView(APIView):
 
     @swagger_auto_schema(
-        operation_description="용의자 ID로 선택한 용의자 조회",
+        operation_id="용의자 ID로 선택한 용의자 조회",
+        operation_description="선택한 {suspect_id} 불러오기",
         responses={
             200: openapi.Response(
                 description="용의자 컬럼",
@@ -102,6 +104,7 @@ class SuspectDetailView(APIView):
 class SuspectsChooseView(APIView):
 
     @swagger_auto_schema(
+        operation_id="용의자 ID로 범인 지목",
         operation_description="범인 지목",
         manual_parameters=[
             openapi.Parameter(
