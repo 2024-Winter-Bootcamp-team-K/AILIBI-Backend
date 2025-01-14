@@ -26,12 +26,13 @@ class MyConsumer(AsyncWebsocketConsumer):
     """
 
     async def connect(self):
-        logger.info("WebSocket connection request received.")
         """
         WebSocket 연결 시 호출.
         - `suspect_id`를 URL에서 추출합니다.
         - Redis 캐시를 초기화하고 초기 메시지를 클라이언트로 전송합니다.
         """
+
+        logger.info("WebSocket connection request received.")
 
         # URL에서 suspect_id 추출
         self.suspect_id = self.scope['url_route']['kwargs']['suspect_id']
@@ -41,10 +42,12 @@ class MyConsumer(AsyncWebsocketConsumer):
         # Redis 캐시 초기화 (기존 대화 기록 삭제)
         cache_key = f'gptchat_suspect_{self.suspect_id}'
         redis_conn.delete(cache_key)
+        logger.debug(f"Redis cache cleared for key: {cache_key}")
 
         # 용의자 정보 로드
         self.suspect = await self.get_suspect_info(self.suspect_id)
         if not self.suspect:
+            logger.warning(f"Suspect with ID {self.suspect_id} not found.")
             await self.send(json.dumps({
                 "error": "용의자를 찾을 수 없습니다."
             }, ensure_ascii=False))
@@ -61,6 +64,8 @@ class MyConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
+
+        logger.info(f"WebSocket connection established for suspect_id: {self.suspect_id}")
 
         # 초기 메시지 클라이언트로 전송
         await self.send(json.dumps({
@@ -80,7 +85,7 @@ class MyConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 self.channel_name
             )
-            logger.info(f'WebSocket disconnected for suspect ID {self.suspect_id}')
+            logger.info(f'WebSocket disconnected for suspect_id: {self.suspect_id}, close_code: {close_code}')
         except Exception as e:
             logger.error(f"Error during WebSocket disconnect: {str(e)}")
 
@@ -96,10 +101,13 @@ class MyConsumer(AsyncWebsocketConsumer):
             user_message = data.get('message', '').strip()
 
             if not user_message:
+                logger.warning("Received empty message from client.")
                 await self.send(json.dumps({
                     "error": "빈 메시지는 처리할 수 없습니다."
                 }, ensure_ascii=False))
                 return
+
+            logger.info(f"Message received from client: {user_message}")
 
             # Redis에서 대화 히스토리 로드
             cache_key = f'gptchat_suspect_{self.suspect_id}'
@@ -123,6 +131,7 @@ class MyConsumer(AsyncWebsocketConsumer):
             # Redis에 대화 기록 저장
             redis_conn.rpush(cache_key, json.dumps({"role": "user", "content": user_message}))
             redis_conn.rpush(cache_key, json.dumps({"role": "assistant", "content": gpt_response}))
+            logger.debug(f"Updated Redis cache for suspect_id: {self.suspect_id}")
 
             # 데이터베이스에 사용자 메시지와 GPT 응답 저장
             await self.save_chat_message(user_message, gpt_response)
@@ -132,6 +141,7 @@ class MyConsumer(AsyncWebsocketConsumer):
                 "message": gpt_response
             }, ensure_ascii=False))
 
+            logger.info(f"GPT response sent: {gpt_response}")
         except json.JSONDecodeError:
             logger.error("Invalid JSON received.")
             await self.send(json.dumps({
@@ -154,6 +164,8 @@ class MyConsumer(AsyncWebsocketConsumer):
 
             # Scenario 정보 가져오기 (Foreign Key로 연결된 경우)
             scenario = suspect.scenario  # Suspect에서 FK로 연결된 Scenario 객체
+
+            logger.debug(f"Suspect info loaded: {suspect.name} ({suspect_id})")
 
             return {
                 "name": suspect.name,
@@ -221,12 +233,13 @@ class MyConsumer(AsyncWebsocketConsumer):
             당신의 목표는 {goal}
             모든 응답은 한국어로 작성하고, 직접적으로 자신이 범인이라고 해서는 안됩니다.
             """
-            logger.info(f"Prompt created for GPT: {prompt.strip()}")
+
+            logger.debug(f"Prompt created: {prompt}")
             return prompt.strip()
         except Exception as e:
-            logger.error(f"Error creating GPT prompt: {str(e)}")
+            logger.error(f"Error creating GPT prompt: {str(e)}", exc_info=True)
             return "죄송합니다. 프롬프트 생성 중 오류가 발생했습니다."
-# 프롬프트는 시나리오 DB를 끌어오는 부분을 생각해봐야함
+
 
 
     async def get_gpt_response(self, user_message):
@@ -241,12 +254,13 @@ class MyConsumer(AsyncWebsocketConsumer):
             )
             # 응답에서 메시지 추출 (객체의 속성 접근)
             if response.choices and len(response.choices) > 0:
+                logger.debug(f"GPT response retrieved successfully.")
                 return response.choices[0].message.content  # 메시지 내용 반환
             else:
-                logger.error("Invalid GPT response format or empty choices.")
+                logger.error("Invalid GPT response format.")
                 return "죄송합니다. GPT 응답 형식에 문제가 발생했습니다."
         except Exception as e:
-            logger.error(f"Error generating GPT response: {str(e)}")
+            logger.error(f"Error generating GPT response: {str(e)}", exc_info=True)
             return "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다."
 
 
@@ -268,6 +282,6 @@ class MyConsumer(AsyncWebsocketConsumer):
             )
             logger.info(f"Chat message saved: User: {user_message}, GPT: {gpt_response}")
         except Exception as e:
-            logger.error(f"Error saving chat message: {str(e)}")
+            logger.error(f"Error saving chat message: {str(e)}", exc_info=True)
 
 
