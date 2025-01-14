@@ -1,6 +1,8 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from .serializers import UserSerializer, LoginSerializer
 from .models import User
 
@@ -11,6 +13,38 @@ logger = logging.getLogger(__name__)
 
 #회원 가입
 class UserRegistrationView(APIView):
+
+    @swagger_auto_schema(
+        operation_id="회원가입",
+        operation_description="이름와 이메일은 구분된다.\n"
+                              "아이디 == 이메일 이다.\n",
+        request_body=UserSerializer,
+        responses={
+            201: openapi.Response(
+                description="User created successfully",
+                examples={
+                    "application/json": {
+                        "name": "test0419",
+                        "email": "test0419@example.com",
+                        "password": "test0419",
+                        "password_check": "test0419"
+                    }
+                }
+            ),
+            400: openapi.Response(
+                description="Invalid input data",
+                examples={
+                    "application/json": {
+                        "name": "test4019",
+                        "email": "test4019@example.com",
+                        "password": "test4019",
+                        "password_check": "test4019"
+                    }
+                }
+            )
+        }
+    )
+
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -25,6 +59,35 @@ class UserRegistrationView(APIView):
 
 #로그인
 class LoginView(APIView):
+
+    @swagger_auto_schema(
+        operation_id="로그인",
+        operation_description="email과 password가 필요",
+        request_body=LoginSerializer,
+        responses={
+            201: openapi.Response(
+                description="Login successful",
+                examples={
+                    "application/json": {
+                        "email": "test0419@example.com",
+                        "password": "test0419"
+                    }
+                }
+            ),
+            400: openapi.Response(
+                description="Invalid login credentials",
+                examples={
+                    "application/json": {
+                        "Error": {
+                            "email": ["This field is required."],
+                            "password": ["This field is required."]
+                        }
+                    }
+                }
+            )
+        }
+    )
+
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():

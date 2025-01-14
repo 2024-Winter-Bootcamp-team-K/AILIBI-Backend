@@ -12,7 +12,7 @@ class His_ScenarioSerializer(serializers.ModelSerializer):
 class His_SuspectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Suspect
-        fields = ['id', 'name', 'gender', 'age', 'job', 'personality', 'is_theif', 'image']
+        fields = ['id', 'name', 'gender', 'age', 'job', 'description', 'is_theif', 'image']
 
 class ScenarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,7 +22,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
 class SuspectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Suspect
-        fields = ['name', 'gender', 'age', 'job', 'personality', 'image']
+        fields = ['name', 'gender', 'age', 'job', 'description', 'image']
 
 class EvidenceSerializer(serializers.ModelSerializer):
     class Meta:
