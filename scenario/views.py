@@ -27,7 +27,7 @@ class HistoriesView(APIView):
         operation_id="모든 플레이 기록 불러오기/선택한 플레이 기록 불러오기/선택한 플레이의 용의자와 심문 내용 불러오기",
         operation_description="user_id = 모든 플레이 기록 불러오기\n"
                               "scenario_id = 선택한 플레이 기록 불러오기\n"
-                              "suspect_id = 선택한 플레이의 용의자와 심문 내용 불러오기\n",
+                              "suspect_id = 선택한 플레이의 용의자와 심문 내용 불러오기",
         manual_parameters=[
             openapi.Parameter('user_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                               description="User ID to filter histories"),
@@ -204,7 +204,7 @@ class ScenariosView(APIView):
     @swagger_auto_schema(
         operation_id="추리 노트 작성하기",
         operation_description="{scenario_id}로 추리노트 작성하기\n"
-                              "추리노트의 추가된 부분만 전송하지 말고, 추리노트 전문을 전송할 것.\n",
+                              "추리노트의 추가된 부분만 전송하지 말고, 추리노트 전문을 전송할 것.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
