@@ -159,6 +159,8 @@ DATABASES = secret_data.get('DATABASES', {
     }
 })
 
+DATABASES['default']['TEST'] = os.getenv('DB_NAME', 'default_db_name')
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
