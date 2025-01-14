@@ -26,8 +26,8 @@ class UserRegistrationView(APIView):
                     "application/json": {
                         "name": "test0419",
                         "email": "test0419@example.com",
-                        "password": "test0419",
-                        "password_check": "test0419"
+                        "passw0rd": "test0419",
+                        "passw0rd_check": "test0419"
                     }
                 }
             ),
@@ -37,8 +37,8 @@ class UserRegistrationView(APIView):
                     "application/json": {
                         "name": "test4019",
                         "email": "test4019@example.com",
-                        "password": "test4019",
-                        "password_check": "test4019"
+                        "passw0rd": "test4019",
+                        "passw0rd_check": "test4019"
                     }
                 }
             )
