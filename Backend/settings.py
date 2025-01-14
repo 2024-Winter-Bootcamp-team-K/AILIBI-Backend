@@ -51,7 +51,7 @@ OPENAI_API_KEY = secret_data.get('OPENAI_API_KEY', os.getenv('OPENAI_API_KEY', '
 
 AWS_ACCESS_KEY_ID = secret_data.get('AWS_ACCESS_KEY_ID', os.getenv('AWS_ACCESS_KEY_ID', 'your-aws-access-key-id'))
 AWS_SECRET_ACCESS_KEY = secret_data.get('AWS_SECRET_ACCESS_KEY', os.getenv('AWS_SECRET_ACCESS_KEY', 'your-aws-secret-access-key'))
-AWS_STORAGE_BUCKET_NAME = secret_data.get('AWS_BUCKET_NAME', os.getenv('AWS_STORAGE_BUCKET_NAME', 'your-storage-bucket'))
+AWS_STORAGE_BUCKET_NAME = secret_data.get('AWS_STORAGE_BUCKET_NAME', os.getenv('AWS_STORAGE_BUCKET_NAME', 'your-storage-bucket'))
 AWS_S3_REGION_NAME = secret_data.get('AWS_S3_REGION_NAME', os.getenv('AWS_S3_REGION_NAME', 'your-s3-region-name'))
 
 # S3 Storage settings
@@ -65,7 +65,7 @@ AWS_DEFAULT_ACL = None
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['121.170.225.248', 'localhost', '127.0.0.1']
 
 # Application definition
 

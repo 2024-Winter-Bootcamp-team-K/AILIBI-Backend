@@ -31,7 +31,7 @@ s3_client = boto3.client(
 
 def get_scenario_image(location, event_type):
     # S3 파일 이름 형식: "scenario/{location} {event_type}.png"
-    s3_scenario_name = f"scenario/{location} {event_type}.png"
+    s3_scenario_name = f"scenario/{location}{event_type}.png"
     s3_scenario_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{s3_scenario_name}"
     return s3_scenario_url
 
@@ -60,6 +60,8 @@ def upload_to_s3(file_name, file_data, content_type):
     """
     try:
         s3_key = f"evidence_images/{file_name}"
+        logger.info(f"Uploading file to S3: Bucket={settings.AWS_STORAGE_BUCKET_NAME}, Key={s3_key}")
+
         s3_client.put_object(
             Bucket=settings.AWS_STORAGE_BUCKET_NAME,
             Key=s3_key,
@@ -267,11 +269,13 @@ def create_scenario(request):
                     n=1,
                     size="1024x1024"
                 )
-                evidence_image_url = evidence_image_response.data[0].url
-                evidence_image_data = requests.get(evidence_image_url).content
+                generate_image_url = evidence_image_response.data[0].url
+                image_data = requests.get(generate_image_url).content
 
                 # S3에 이미지 업로드
-                evidence_image_url = upload_to_s3(f"evidence_{i + 1}.png", evidence_image_data, "image/png")
+                uploaded_image_url = upload_to_s3(f"evidence_{i + 1}.png", image_data, "image/png")
+
+                evidence_image_url = uploaded_image_url if uploaded_image_url else "test.jpg"
 
                 if debug:
                     print(f"사건 이미지 주소 : {evidence_image_url}")
@@ -440,7 +444,7 @@ def create_scenario(request):
             return JsonResponse({
                 "scenario_id": scenario_id,
                 "scenario_description": scenario_description,
-                "scenario_image": "test.jpg",
+                "scenario_image": scenario_image_url,
                 "evidence": evidence_list,
                 "suspects": suspect_list
             }, status=201)
