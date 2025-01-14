@@ -61,7 +61,7 @@ class SuspectsView(APIView):
 class SuspectDetailView(APIView):
 
     @swagger_auto_schema(
-        operation_description="suspect_id로 선택한 용의자 조회",
+        operation_description="용의자 ID로 선택한 용의자 조회",
         responses={
             200: openapi.Response(
                 description="용의자 컬럼",

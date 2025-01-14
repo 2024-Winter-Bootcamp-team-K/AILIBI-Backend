@@ -42,14 +42,14 @@ urlpatterns = [
     #path('users/', include('user.users_urls')),  # 사용자 정보 불러오기
     path('scenarios/', include('llm.urls')), # 시나리오 생성
 
-    path('histories', include('scenario.urls')),  # /histories?user_id={userId}, /histories?scenario_id={scenarioId}, /histories?suspect_id={suspectId}, /histories?scenario_id={scenarioId}
+    path('histories/', include('scenario.urls')),  # /histories?user_id={userId}, /histories?scenario_id={scenarioId}, /histories?suspect_id={suspectId}, /histories?scenario_id={scenarioId}
     path('scenarios/<int:scenario_id>', include('scenario.scenario_urls')), # /scenarios/{scenario_id}, /scenarios/{scenario_id}
 
     path('suspects/', include('suspect.urls')), # /suspects?scenario_id={scenarioId}
 
     path('suspects/<int:suspect_id>', include('suspect.suspect_urls')), # /suspects/{suspect_id}
 
-    path('evidences', include('evidence.urls')), # /evidences?scenario_id={scenarioId}, /evidences/{evidence_id}
+    path('evidences/', include('evidence.urls')), # /evidences?scenario_id={scenarioId}, /evidences/{evidence_id}
 
     path('tts/', include('tts.urls')),
 
