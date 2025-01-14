@@ -1,5 +1,5 @@
 import json
-
+import boto3
 import redis
 import random
 from openai import OpenAI
@@ -10,6 +10,8 @@ from scenario.models import Scenario
 from evidence.models import Evidence
 from suspect.models import Suspect
 from random import shuffle
+import requests
+from io import BytesIO
 
 import logging
 
@@ -19,11 +21,19 @@ logger = logging.getLogger(__name__)
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
+# S3 클라이언트 생성
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    region_name=settings.AWS_S3_REGION_NAME,
+)
+
 def get_scenario_image(location, event_type):
     # S3 파일 이름 형식: "scenario/{location} {event_type}.png"
-    file_name = f"scenario/{location} {event_type}.png"
-    s3_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}"
-    return s3_url
+    s3_scenario_name = f"scenario/{location} {event_type}.png"
+    s3_scenario_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{s3_scenario_name}"
+    return s3_scenario_url
 
 def get_suspect_images():
     # 여성 이미지 파일 리스트
@@ -44,6 +54,23 @@ def get_suspect_images():
 
     return female_image_url, male_image_urls
 
+def upload_to_s3(file_name, file_data, content_type):
+    """
+    파일을 AWS S3에 업로드하고 URL 반환.
+    """
+    try:
+        s3_key = f"evidence_images/{file_name}"
+        s3_client.put_object(
+            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+            Key=s3_key,
+            Body=file_data,
+            ContentType=content_type,
+        )
+        s3_evidence_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/{s3_key}"
+        return s3_evidence_url
+    except Exception as e:
+        logger.error(f"Failed to upload to S3: {e}")
+        return None
 
 def truncate_prompt(prompt, max_length=1000):
     """Truncate the prompt to ensure it does not exceed max_length."""
@@ -53,11 +80,8 @@ def truncate_prompt(prompt, max_length=1000):
 
 @csrf_exempt
 def create_scenario(request):
-
-
     #디버그 옵션
     debug = False
-
 
     if request.method == "POST":
         try:
@@ -65,7 +89,6 @@ def create_scenario(request):
 
             if debug:
                 print("start\n\n")
-
 
             # user_id 가져오기
             user_id = data.get("user_id")
@@ -226,7 +249,7 @@ def create_scenario(request):
                 if debug:
                     print(f"증거 이름 {i + 1}번 : {evidence_name}\n")
                     print(f"증거 설명 {i + 1}번 : {evidence_description}\n")
-                """
+
                 evidence_image_prompt = (
                     f"Generate an evidence image for a deduction game. "
                     f"Use the image generation tool to create an image of the evidence ({i + 1}) based on the following scenario, event type, and evidence description, all provided in Korean.\n\n"
@@ -237,6 +260,7 @@ def create_scenario(request):
                     f"Ensure the image reflects the event type, the scenario's context, and the details given in the evidence description. "
                     f"Output the generated image."
                 )
+
                 evidence_image_response = client.images.generate(
                     model="dall-e-3",
                     prompt=truncate_prompt(evidence_image_prompt),
@@ -244,10 +268,13 @@ def create_scenario(request):
                     size="1024x1024"
                 )
                 evidence_image_url = evidence_image_response.data[0].url
+                evidence_image_data = requests.get(evidence_image_url).content
+
+                # S3에 이미지 업로드
+                evidence_image_url = upload_to_s3(f"evidence_{i + 1}.png", evidence_image_data, "image/png")
 
                 if debug:
                     print(f"사건 이미지 주소 : {evidence_image_url}")
-                """
 
                 evidence_name_last.append(evidence_name)
 
@@ -255,13 +282,13 @@ def create_scenario(request):
                     scenario=scenario,
                     name=evidence_name,
                     description=evidence_description,
-                    image="test.jpg"
+                    image=evidence_image_url
                 )
                 evidence_list.append({
                     "id": evidence.id,
                     "name": evidence.name,
                     "description": evidence.description,
-                    "image": "test.jpg"
+                    "image":evidence_image_url
                 })
 
             # Suspect 생성
