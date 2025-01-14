@@ -75,7 +75,7 @@ class HistoriesView(APIView):
 
 
             # Scenario, Suspects, Evidence 직렬화
-            scenario_data = ScenarioSerializer(scenario).data
+            scenario_data = His_ScenarioSerializer(scenario).data
             suspects_data = His_SuspectSerializer(suspects, many=True).data
             evidence_data = EvidenceSerializer(evidences, many=True).data
 
@@ -114,6 +114,7 @@ class HistoriesView(APIView):
             return Response(response_data, status=status.HTTP_200_OK)
 
         else:
+            logger.error(f"scenario/views.py/HistoriesView - error: 잘못된 요청")
             return Response({'error': '잘못된 요청'}, status=status.HTTP_400_BAD_REQUEST)
 
 
