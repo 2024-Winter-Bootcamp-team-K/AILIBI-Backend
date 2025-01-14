@@ -39,6 +39,7 @@ class LoginView(APIView):
         logger.warning(f"user/views.py/LoginView - Login attempt failed:, {serializer.errors}")
         return Response({"Error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+"""
 class UserDetailView(APIView):
     def get(self, request, user_id):
         try:
@@ -57,3 +58,4 @@ class UserDetailView(APIView):
             # 기타 예외 처리
             logger.exception(f"user/views.py/UserDetailView - Unexpected error: {e}")
             return Response({"Error": "서버에 에러가 발생하였습니다."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+"""
