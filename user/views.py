@@ -70,7 +70,7 @@ class LoginView(APIView):
                 examples={
                     "application/json": {
                         "email": "test0419@example.com",
-                        "password": "test0419"
+                        "passw0rd": "test0419"
                     }
                 }
             ),
@@ -80,7 +80,7 @@ class LoginView(APIView):
                     "application/json": {
                         "Error": {
                             "email": ["This field is required."],
-                            "password": ["This field is required."]
+                            "passw0rd": ["This field is required."]
                         }
                     }
                 }
