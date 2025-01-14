@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from .models import Suspect
 from chat.models import Chat
 from .serializers import SuspectSerializer
@@ -10,6 +12,34 @@ import logging
 logger = logging.getLogger(__name__)
 
 class SuspectsView(APIView):
+    @swagger_auto_schema(
+        operation_description="시나리오 ID로 용의자 목록 조회",
+        manual_parameters=[
+            openapi.Parameter(
+                'scenario_id', openapi.IN_QUERY,
+                description="scenario_id",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ],
+        responses={
+            200: openapi.Response(
+                description="용의자 목록",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'suspects': openapi.Schema(
+                            type=openapi.TYPE_ARRAY,
+                            items=openapi.Schema(
+                                type=openapi.TYPE_OBJECT
+                            )
+                        )
+                    }
+                )
+            ),
+            400: "scenario_id가 필요합니다."
+        }
+    )
     def get(self, request):
         scenario_id = request.GET.get('scenario_id')
         if not scenario_id:
@@ -28,32 +58,35 @@ class SuspectsView(APIView):
         logger.info(f"suspect/views.py/SuspectsView - {scenario_id} : {suspect_data}")
         return Response({"suspects": suspect_data}, status=status.HTTP_200_OK)
 
-    def put(self, request):
-        choose_theif = request.data.get("choose_theif")
-
-        if not choose_theif:
-            logger.error(f"suspect/views.py/SuspectsView - error : choose_theif is required")
-            return Response({"error": "choose_theif is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Suspect 객체 조회
-        suspect = Suspect.objects.filter(name=choose_theif).first()
-        if not suspect:
-            logger.error(f"suspect/views.py/SuspectsView - error : Suspect not found")
-            return Response({"error": "Suspect not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # 'is_theif' 값을 DB에서 확인
-        is_theif_value = suspect.is_theif
-
-        # 응답: 'is_theif' 값에 따라 응답 반환
-        logger.info(f"suspect/views.py/SuspectsView - {suspect.id}: {is_theif_value}")
-        return Response({"is_theif": is_theif_value}, status=status.HTTP_201_CREATED)
-
-
 class SuspectDetailView(APIView):
+
+    @swagger_auto_schema(
+        operation_description="suspect_id로 선택한 용의자 조회",
+        responses={
+            200: openapi.Response(
+                description="용의자 컬럼",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'id': openapi.Schema(
+                            type=openapi.TYPE_INTEGER,
+                            description="Suspect ID"
+                        ),
+                        'init_chat': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="Initial chat"
+                        )
+                    }
+                )
+            ),
+            404: "Suspect or Chat not found"
+        }
+    )
     def get(self, request, suspect_id):
         try:
             suspect = Suspect.objects.get(id=suspect_id)
-            init_chat = Chat.objects.get(suspect_id=suspect_id).init_chat
+            chats = Chat.objects.filter(suspect_id=suspect_id)
+            init_chat = [chat.init_chat for chat in chats]
             suspect_data = SuspectSerializer(suspect).data
             suspect_data["init_chat"] = init_chat
             logger.info(f"suspect/views.py/SuspectsView - {suspect.id} : {suspect_data}")
@@ -67,8 +100,35 @@ class SuspectDetailView(APIView):
 
 
 class SuspectsChooseView(APIView):
+
+    @swagger_auto_schema(
+        operation_description="범인 지목",
+        manual_parameters=[
+            openapi.Parameter(
+                'suspect_id', openapi.IN_QUERY,
+                description="ID of the suspect",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ],
+        responses={
+            200: openapi.Response(
+                description="범인 유무",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'is_theif': openapi.Schema(
+                            type=openapi.TYPE_BOOLEAN,
+                            description="Thief status"
+                        )
+                    }
+                )
+            ),
+            400: "suspect_id is required",
+            404: "Suspect not found"
+        }
+    )
     def get(self, request):
-        # URL의 쿼리 파라미터에서 suspect_id를 받아옵니다.
         suspect_id = request.GET.get('suspect_id')
 
         if not suspect_id:
@@ -76,13 +136,8 @@ class SuspectsChooseView(APIView):
             return Response({"error": "suspect_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # suspect_id로 Suspect를 조회
             suspect = Suspect.objects.get(id=suspect_id)
-
-            # Suspect의 is_theif 값을 가져옵니다.
             is_theif_value = suspect.is_theif
-
-            # 성공적으로 가져온 값으로 응답을 반환합니다.
 
             logger.info(f"suspect/views.py/SuspectChooseView - {suspect.id} : {is_theif_value}")
             return Response({"is_theif": is_theif_value}, status=status.HTTP_200_OK)
