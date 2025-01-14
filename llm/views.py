@@ -19,6 +19,32 @@ logger = logging.getLogger(__name__)
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
+def get_scenario_image(location, event_type):
+    # S3 파일 이름 형식: "scenario/{location} {event_type}.png"
+    file_name = f"scenario/{location} {event_type}.png"
+    s3_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}"
+    return s3_url
+
+def get_suspect_images():
+    # 여성 이미지 파일 리스트
+    female_files = [f"suspect/여성{i}.png" for i in range(1, 5)]
+    # 남성 이미지 파일 리스트
+    male_files = [f"suspect/남성{i}.png" for i in range(1, 9)]
+
+    # 랜덤으로 여성 1명, 남성 2명 선택
+    female_image = random.choice(female_files)
+    male_images = random.sample(male_files, 2)  # 두 명의 남성 선택, 중복 방지
+
+    # S3 URL 생성
+    female_image_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{female_image}"
+    male_image_urls = [
+        f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{male_image}"
+        for male_image in male_images
+    ]
+
+    return female_image_url, male_image_urls
+
+
 def truncate_prompt(prompt, max_length=1000):
     """Truncate the prompt to ensure it does not exceed max_length."""
     if len(prompt) > max_length:
@@ -81,8 +107,10 @@ def create_scenario(request):
                 f"Now, write the scenario."
             )
 
-
             scenario_input = truncate_prompt(scenario_input)
+
+            scenario_image_url = get_scenario_image(location, event_type)
+            female_image_url, male_image_urls = get_suspect_images()
 
             # GPT-4 시나리오 생성
             gpt_response = client.chat.completions.create(
@@ -143,7 +171,7 @@ def create_scenario(request):
                 type=event_type,
                 datetime=f"{year}-{month}-{day} {hour}:{minute}",
                 description=scenario_description,
-                image="test.jpg",
+                image=scenario_image_url,
                 level=2
             )
             scenario_id = scenario.id  # AutoField에서 ID 가져오기
@@ -293,8 +321,10 @@ def create_scenario(request):
 
                     if gender_select == 0: # 남성
                         suspect_gender = False
+                        suspect_image_url = male_image_urls.pop(0)
                     elif gender_select == 1: #여성
                         suspect_gender = True
+                        suspect_image_url = female_image_url
 
                     suspect_age = random.randint(20, 39) #나이 선택
 
@@ -364,7 +394,7 @@ def create_scenario(request):
                     description= suspect_description,
                     init_chat= suspect_initial_statement,
                     is_theif=is_theif,
-                    image="test.jpg" #suspect_image_url
+                    image= suspect_image_url
                 )
 
                 suspect_list.append({
@@ -376,7 +406,7 @@ def create_scenario(request):
                     "description" : suspect_description,
                     "init_chat" : suspect_initial_statement,
                     "is_theif": is_theif,
-                    "image": "test.jpg"
+                    "image": suspect_image_url
                 })
 
             logger.info(f"llm/views.py/create_scenario - 시나리오 생성 완료: {scenario_id}")

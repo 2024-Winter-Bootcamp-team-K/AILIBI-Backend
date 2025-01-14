@@ -49,6 +49,11 @@ for task_id in ELEVENLABS_VOICE_ID.keys():
 #yourproject/settings.py
 OPENAI_API_KEY = secret_data.get('OPENAI_API_KEY', os.getenv('OPENAI_API_KEY', 'your-openai-api-key'))
 
+AWS_ACCESS_KEY_ID = secret_data.get('AWS_ACCESS_KEY_ID', os.getenv('AWS_ACCESS_KEY_ID', 'your-aws-access-key-id'))
+AWS_SECRET_ACCESS_KEY = secret_data.get('AWS_SECRET_ACCESS_KEY', os.getenv('AWS_SECRET_ACCESS_KEY', 'your-aws-secret-access-key'))
+AWS_STORAGE_BUCKET_NAME = secret_data.get('AWS_BUCKET_NAME', os.getenv('AWS_STORAGE_BUCKET_NAME', 'your-storage-bucket'))
+AWS_S3_REGION_NAME = secret_data.get('AWS_S3_REGION_NAME', os.getenv('AWS_S3_REGION_NAME', 'your-s3-region-name'))
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
