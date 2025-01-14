@@ -12,7 +12,7 @@ class His_ScenarioSerializer(serializers.ModelSerializer):
 class His_SuspectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Suspect
-        fields = ['id', 'name', 'gender', 'age', 'job', 'description', 'is_theif', 'image']
+        fields = ['id', 'name', 'gender', 'age', 'job', 'description', 'is_theif', 'image', 'init_chat']
 
 class ScenarioSerializer(serializers.ModelSerializer):
     class Meta:

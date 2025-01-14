@@ -73,16 +73,10 @@ class HistoriesView(APIView):
             evidences = Evidence.objects.filter(scenario_id=scenario_id)
 
 
-            suspects_data = His_SuspectSerializer(suspects, many=True).data
-
-            # 각 용의자에 대해 init_chat 가져오기
-            for suspect_data in suspects_data:
-                chat = Chat.objects.filter(suspect_id=suspect_data['id']).first()
-
-                suspect_data['init_chat'] = chat.init_chat if chat else ''
 
             # Scenario, Suspects, Evidence 직렬화
             scenario_data = ScenarioSerializer(scenario).data
+            suspects_data = His_SuspectSerializer(suspects, many=True).data
             evidence_data = EvidenceSerializer(evidences, many=True).data
 
             # 최종 응답 데이터 구성
@@ -180,11 +174,6 @@ class ScenariosView(APIView):
             scenario_data = ScenarioSerializer(scenario).data
             suspects_data = SuspectSerializer(suspects, many=True).data
             evidences_data = EvidenceSerializer(evidences, many=True).data
-
-            # Add init_chat for each suspect
-            for suspect_data, suspect in zip(suspects_data, suspects):
-                chat = Chat.objects.filter(suspect_id=suspect.id).first()
-                suspect_data['init_chat'] = chat.init_chat if chat else ''
 
             response_data = {
                 'scenarios': [scenario_data],
