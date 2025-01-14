@@ -17,7 +17,7 @@ class UserRegistrationView(APIView):
     @swagger_auto_schema(
         operation_id="회원가입",
         operation_description="이름와 이메일은 구분된다.\n"
-                              "아이디 == 이메일 이다.\n",
+                              "아이디 == 이메일 이다.",
         request_body=UserSerializer,
         responses={
             201: openapi.Response(
