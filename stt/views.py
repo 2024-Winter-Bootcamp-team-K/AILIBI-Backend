@@ -10,7 +10,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 @csrf_exempt  # 이 함수에서는 CSRF 검사를 생략
 def stt_process(request):
 
