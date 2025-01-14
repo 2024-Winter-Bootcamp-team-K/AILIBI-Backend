@@ -49,10 +49,23 @@ for task_id in ELEVENLABS_VOICE_ID.keys():
 #yourproject/settings.py
 OPENAI_API_KEY = secret_data.get('OPENAI_API_KEY', os.getenv('OPENAI_API_KEY', 'your-openai-api-key'))
 
+AWS_ACCESS_KEY_ID = secret_data.get('AWS_ACCESS_KEY_ID', os.getenv('AWS_ACCESS_KEY_ID', 'your-aws-access-key-id'))
+AWS_SECRET_ACCESS_KEY = secret_data.get('AWS_SECRET_ACCESS_KEY', os.getenv('AWS_SECRET_ACCESS_KEY', 'your-aws-secret-access-key'))
+AWS_STORAGE_BUCKET_NAME = secret_data.get('AWS_STORAGE_BUCKET_NAME', os.getenv('AWS_STORAGE_BUCKET_NAME', 'your-storage-bucket'))
+AWS_S3_REGION_NAME = secret_data.get('AWS_S3_REGION_NAME', os.getenv('AWS_S3_REGION_NAME', 'your-s3-region-name'))
+
+# S3 Storage settings
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_S3_FILE_OVERWRITE = False  # 같은 이름 파일 덮어쓰기 방지
+AWS_QUERYSTRING_AUTH = False  # URL에서 인증 문자열 제외 (퍼블릭 액세스 허용 시)
+
+# Optional: Pre-signed URL을 사용하려면 설정
+AWS_DEFAULT_ACL = None
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['121.170.225.248', 'localhost', '127.0.0.1']
 
 # Application definition
 

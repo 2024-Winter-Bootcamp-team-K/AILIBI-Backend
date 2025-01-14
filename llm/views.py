@@ -1,5 +1,5 @@
 import json
-
+import boto3
 import redis
 import random
 from openai import OpenAI
@@ -10,6 +10,8 @@ from scenario.models import Scenario
 from evidence.models import Evidence
 from suspect.models import Suspect
 from random import shuffle
+import requests
+from io import BytesIO
 
 import logging
 
@@ -19,6 +21,59 @@ logger = logging.getLogger(__name__)
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
+# S3 클라이언트 생성
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    region_name=settings.AWS_S3_REGION_NAME,
+)
+
+def get_scenario_image(location, event_type):
+    # S3 파일 이름 형식: "scenario/{location} {event_type}.png"
+    s3_scenario_name = f"scenario/{location}{event_type}.png"
+    s3_scenario_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{s3_scenario_name}"
+    return s3_scenario_url
+
+def get_suspect_images():
+    # 여성 이미지 파일 리스트
+    female_files = [f"suspect/여성{i}.png" for i in range(1, 5)]
+    # 남성 이미지 파일 리스트
+    male_files = [f"suspect/남성{i}.png" for i in range(1, 9)]
+
+    # 랜덤으로 여성 1명, 남성 2명 선택
+    female_image = random.choice(female_files)
+    male_images = random.sample(male_files, 2)  # 두 명의 남성 선택, 중복 방지
+
+    # S3 URL 생성
+    female_image_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{female_image}"
+    male_image_urls = [
+        f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{male_image}"
+        for male_image in male_images
+    ]
+
+    return female_image_url, male_image_urls
+
+def upload_to_s3(file_name, file_data, content_type):
+    """
+    파일을 AWS S3에 업로드하고 URL 반환.
+    """
+    try:
+        s3_key = f"evidence_images/{file_name}"
+        logger.info(f"Uploading file to S3: Bucket={settings.AWS_STORAGE_BUCKET_NAME}, Key={s3_key}")
+
+        s3_client.put_object(
+            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+            Key=s3_key,
+            Body=file_data,
+            ContentType=content_type,
+        )
+        s3_evidence_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/{s3_key}"
+        return s3_evidence_url
+    except Exception as e:
+        logger.error(f"Failed to upload to S3: {e}")
+        return None
+
 def truncate_prompt(prompt, max_length=1000):
     """Truncate the prompt to ensure it does not exceed max_length."""
     if len(prompt) > max_length:
@@ -27,11 +82,8 @@ def truncate_prompt(prompt, max_length=1000):
 
 @csrf_exempt
 def create_scenario(request):
-
-
     #디버그 옵션
     debug = False
-
 
     if request.method == "POST":
         try:
@@ -39,7 +91,6 @@ def create_scenario(request):
 
             if debug:
                 print("start\n\n")
-
 
             # user_id 가져오기
             user_id = data.get("user_id")
@@ -81,8 +132,10 @@ def create_scenario(request):
                 f"Now, write the scenario."
             )
 
-
             scenario_input = truncate_prompt(scenario_input)
+
+            scenario_image_url = get_scenario_image(location, event_type)
+            female_image_url, male_image_urls = get_suspect_images()
 
             # GPT-4 시나리오 생성
             gpt_response = client.chat.completions.create(
@@ -143,7 +196,7 @@ def create_scenario(request):
                 type=event_type,
                 datetime=f"{year}-{month}-{day} {hour}:{minute}",
                 description=scenario_description,
-                image="test.jpg",
+                image=scenario_image_url,
                 level=2
             )
             scenario_id = scenario.id  # AutoField에서 ID 가져오기
@@ -198,7 +251,7 @@ def create_scenario(request):
                 if debug:
                     print(f"증거 이름 {i + 1}번 : {evidence_name}\n")
                     print(f"증거 설명 {i + 1}번 : {evidence_description}\n")
-                """
+
                 evidence_image_prompt = (
                     f"Generate an evidence image for a deduction game. "
                     f"Use the image generation tool to create an image of the evidence ({i + 1}) based on the following scenario, event type, and evidence description, all provided in Korean.\n\n"
@@ -209,17 +262,23 @@ def create_scenario(request):
                     f"Ensure the image reflects the event type, the scenario's context, and the details given in the evidence description. "
                     f"Output the generated image."
                 )
+
                 evidence_image_response = client.images.generate(
                     model="dall-e-3",
                     prompt=truncate_prompt(evidence_image_prompt),
                     n=1,
                     size="1024x1024"
                 )
-                evidence_image_url = evidence_image_response.data[0].url
+                generate_image_url = evidence_image_response.data[0].url
+                image_data = requests.get(generate_image_url).content
+
+                # S3에 이미지 업로드
+                uploaded_image_url = upload_to_s3(f"evidence_{i + 1}.png", image_data, "image/png")
+
+                evidence_image_url = uploaded_image_url if uploaded_image_url else "test.jpg"
 
                 if debug:
                     print(f"사건 이미지 주소 : {evidence_image_url}")
-                """
 
                 evidence_name_last.append(evidence_name)
 
@@ -227,13 +286,13 @@ def create_scenario(request):
                     scenario=scenario,
                     name=evidence_name,
                     description=evidence_description,
-                    image="test.jpg"
+                    image=evidence_image_url
                 )
                 evidence_list.append({
                     "id": evidence.id,
                     "name": evidence.name,
                     "description": evidence.description,
-                    "image": "test.jpg"
+                    "image":evidence_image_url
                 })
 
             # Suspect 생성
@@ -293,8 +352,10 @@ def create_scenario(request):
 
                     if gender_select == 0: # 남성
                         suspect_gender = False
+                        suspect_image_url = male_image_urls.pop(0)
                     elif gender_select == 1: #여성
                         suspect_gender = True
+                        suspect_image_url = female_image_url
 
                     suspect_age = random.randint(20, 39) #나이 선택
 
@@ -364,7 +425,7 @@ def create_scenario(request):
                     description= suspect_description,
                     init_chat= suspect_initial_statement,
                     is_theif=is_theif,
-                    image="test.jpg" #suspect_image_url
+                    image= suspect_image_url
                 )
 
                 suspect_list.append({
@@ -376,14 +437,14 @@ def create_scenario(request):
                     "description" : suspect_description,
                     "init_chat" : suspect_initial_statement,
                     "is_theif": is_theif,
-                    "image": "test.jpg"
+                    "image": suspect_image_url
                 })
 
             logger.info(f"llm/views.py/create_scenario - 시나리오 생성 완료: {scenario_id}")
             return JsonResponse({
                 "scenario_id": scenario_id,
                 "scenario_description": scenario_description,
-                "scenario_image": "test.jpg",
+                "scenario_image": scenario_image_url,
                 "evidence": evidence_list,
                 "suspects": suspect_list
             }, status=201)
