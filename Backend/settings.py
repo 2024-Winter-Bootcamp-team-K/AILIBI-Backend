@@ -156,10 +156,11 @@ DATABASES = secret_data.get('DATABASES', {
         'PASSWORD': os.getenv('DB_PASSWORD', 'default_password'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
+        'TEST': {
+            'NAME': os.getenv('DB_NAME', 'default_db_name'),  # 테스트용 데이터베이스 이름 설정
+        },
     }
 })
-
-DATABASES['default']['TEST'] = {'NAME' : os.getenv('DB_NAME', 'default_db_name')}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
