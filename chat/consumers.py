@@ -45,6 +45,9 @@ class MyConsumer(AsyncWebsocketConsumer):
         # 용의자 정보 로드
         self.suspect = await self.get_suspect_info(self.suspect_id)
         if not self.suspect:
+            await self.send(json.dumps({
+                "error": "용의자를 찾을 수 없습니다."
+            }, ensure_ascii=False))
             await self.close()
             return
 
@@ -56,6 +59,7 @@ class MyConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+
         await self.accept()
 
         # 초기 메시지 클라이언트로 전송
@@ -80,38 +84,66 @@ class MyConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"Error during WebSocket disconnect: {str(e)}")
 
+
+
     async def receive(self, text_data):
+        """
+        클라이언트 메시지를 받아 GPT에 전달하고 응답을 반환하는 간단한 테스트 함수.
+        """
         try:
-            # JSON 메시지 파싱
+            # JSON 형식으로 클라이언트 메시지 파싱
             data = json.loads(text_data)
-            logger.info(f"Received message: {data}")
+            user_message = data.get('message', '').strip()
 
-            # 메시지 처리 로직 호출
-            response = await self.handle_message(data)
+            if not user_message:
+                await self.send(json.dumps({
+                    "error": "빈 메시지는 처리할 수 없습니다."
+                }, ensure_ascii=False))
+                return
 
-            # 정상적인 응답 전송
+            # Redis에서 대화 히스토리 로드
+            cache_key = f'gptchat_suspect_{self.suspect_id}'
+            chat_history = redis_conn.lrange(cache_key, 0, -1) or []
+            messages_history = [json.loads(msg) for msg in chat_history]
+
+            # 히스토리가 없으면 초기 진술 추가
+            if len(messages_history) == 0:
+                initial_statement = self.suspect.get('init_chat', "현재 이 용의자는 초기 진술이 없습니다.")
+                messages_history.append({"role": "system", "content": f"초기 진술: {initial_statement}"})
+
+            # 사용자 메시지를 히스토리에 추가
+            messages_history.append({"role": "user", "content": user_message})
+
+            # GPT 호출을 위한 프롬프트 생성
+            prompt = await self.create_prompt(self.suspect, messages_history, user_message)
+
+            # GPT API 호출
+            gpt_response = await self.get_gpt_response(prompt)
+
+            # Redis에 대화 기록 저장
+            redis_conn.rpush(cache_key, json.dumps({"role": "user", "content": user_message}))
+            redis_conn.rpush(cache_key, json.dumps({"role": "assistant", "content": gpt_response}))
+
+            # 데이터베이스에 사용자 메시지와 GPT 응답 저장
+            await self.save_chat_message(user_message, gpt_response)
+
+            # 클라이언트로 GPT 응답 전송
             await self.send(json.dumps({
-                "message": response,
+                "message": gpt_response
             }, ensure_ascii=False))
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON decode error: {e}")
+
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON received.")
             await self.send(json.dumps({
-                "error": "Invalid JSON format"
+                "error": "잘못된 JSON 형식입니다."
             }, ensure_ascii=False))
         except Exception as e:
-            # 예외 로깅
-            logger.error(f"Unexpected error: {e}")
+            logger.error(f"Error in receive: {str(e)}")
             await self.send(json.dumps({
-                "message": "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다."
+                "error": "내부 서버 오류가 발생했습니다."
             }, ensure_ascii=False))
 
-    @sync_to_async
-    def handle_message(self, data):
-        # 받은 메시지 처리
-        if "message" in data:
-            return f"'{data['message']}' 메시지를 받았습니다."
-        else:
-            raise ValueError("Message key not found in data.")
+
 
     @sync_to_async
     def get_suspect_info(self, suspect_id):
@@ -120,6 +152,9 @@ class MyConsumer(AsyncWebsocketConsumer):
             Suspect = apps.get_model('suspect', 'Suspect')
             suspect = Suspect.objects.get(pk=suspect_id)
 
+            # Scenario 정보 가져오기 (Foreign Key로 연결된 경우)
+            scenario = suspect.scenario  # Suspect에서 FK로 연결된 Scenario 객체
+
             return {
                 "name": suspect.name,
                 "gender": "남성" if suspect.gender == 0 else "여성",
@@ -127,95 +162,112 @@ class MyConsumer(AsyncWebsocketConsumer):
                 "job": suspect.job,
                 "description": suspect.description,
                 "is_theif": "범인" if suspect.is_theif else "무고한 시민",
-                "image": f"{settings.MEDIA_URL}{suspect.image}" if suspect.image else None,
-                # 또는 절대 경로를 사용하는 경우:
-                # "image": f"{settings.MEDIA_URL}{os.path.relpath(suspect.image, settings.MEDIA_ROOT)}" if suspect.image else None,
                 "init_chat": suspect.init_chat,
+                "scenario": {
+                    "id": scenario.id,  # Scenario ID
+                    "name": scenario.name,
+                    "description": scenario.description,
+                    "location": scenario.location,
+                    "datetime": scenario.datetime,
+                    "type": scenario.type
+                } if scenario else None  # Scenario가 없을 경우 None 반환
             }
         except Suspect.DoesNotExist:
             logger.error(f"Suspect with ID {suspect_id} does not exist.")
             return None
 
+
+
     @sync_to_async
-    def get_scenario_info(self, scenario_id):
+    def create_prompt(self, suspect, history, user_message):
         """
-        데이터베이스에서 시나리오 정보를 조회합니다.
+        Redis 대화 히스토리와 사용자 입력을 기반으로 GPT 프롬프트를 생성합니다.
         """
-        from django.apps import apps  # Lazy Import 사용
         try:
-            Scenario = apps.get_model('scenario', 'Scenario')  # 문자열 참조로 Scenario 모델 가져오기
-            scenario = Scenario.objects.get(pk=scenario_id)
-            return {
-                "name": scenario.name,
-                "description": scenario.description,
-                "location": scenario.location,
-                "datetime": scenario.datetime,
-            }
-        except Scenario.DoesNotExist:
-            logger.error(f"Scenario with ID {scenario_id} does not exist.")
-            return None
+            # Redis 대화 히스토리를 텍스트로 변환
+            formatted_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history])
 
+            # 관련 증거 조회
+            Evidence = apps.get_model('evidence', 'Evidence')
+            scenario_id = suspect['scenario']['id']
+            evidence_list = Evidence.objects.filter(scenario_id=scenario_id)
 
+            # 증거를 텍스트로 변환
+            formatted_evidence = "\n".join([f"- {evidence.name}: {evidence.description}" for evidence in evidence_list])
 
-    async def save_chat_message(self, user_message, gpt_response):
-        """
-        사용자 메시지와 GPT 응답을 데이터베이스에 저장합니다.
-        """
-        from django.apps import apps  # Lazy Import 사용
-        try:
-            Chat = apps.get_model('chat', 'Chat')  # 문자열 참조로 Chat 모델 가져오기
-            Chat.objects.create(
-                suspect_id=self.suspect_id,
-                user_chat=user_message,
-                suspect_chat=gpt_response
+            # 용의자가 범인인지 여부에 따라 목표 설정
+            goal = (
+                "당신의 무죄를 설득력 있게 주장하고, 범죄와 관련된 혐의를 피하십시오."
+                if not suspect["is_theif"] else
+                "당신이 범인이기 때문에, 혐의를 완전히 인정하지 않으면서 의심을 다른 곳으로 돌리십시오."
             )
+
+            # 프롬프트 생성
+            prompt = f"""
+            당신은 용의자 {suspect['name']}입니다. 나이는 {suspect['age']}세이고, 성별은 {suspect['gender']}입니다.
+            직업은 {suspect['job']}이며, 성격은 다음과 같습니다: "{suspect['description']}".
+            현재{suspect['scenario']['location']}에서 {suspect['scenario']['datetime']}에 발생한 {suspect['scenario']['type']}사건에 대해 심문을 받고 있습니다.
+            사건에 대해서 설명하자면 {suspect['scenario']['description']} 이런 사건입니다.
+            
+            해당 사건에서 발견된 증거는 다음과 같습니다:
+            {formatted_evidence}
+            이 외의 증거는 없습니다.
+            
+            지금까지의 대화 기록은 다음과 같습니다:
+            {formatted_history}
+
+            심문관이 방금 당신에게 다음과 같이 물었습니다: "{user_message}"
+
+            당신의 목표는 {goal}
+            모든 응답은 한국어로 작성하고, 직접적으로 자신이 범인이라고 해서는 안됩니다.
+            """
+            logger.info(f"Prompt created for GPT: {prompt.strip()}")
+            return prompt.strip()
         except Exception as e:
-            logger.error(f"Error saving chat message: {str(e)}")
-
-    @sync_to_async
-    # 프롬프트는 좀더 고민해보고 진행 예정
-    def create_prompt(self, suspect, scenario, history, user_message):
-        """
-        LLM이 생성한 데이터를 기반으로 GPT 프롬프트를 생성합니다.
-        - 프롬프트를 한국어로 작성하여 LLM이 한국어로 응답하도록 유도.
-        """
-        # 증거 정리
-        evidence_list = "\n- ".join(suspect.get("evidence", []))
-
-        # 용의자가 범인인지 여부에 따라 목표 설정
-        goal = "당신의 무죄를 설득력 있게 주장하고, 범죄와 관련된 혐의를 피하십시오." \
-            if not suspect["is_theif"] else \
-            "혐의를 완전히 인정하지 않으면서 의심을 다른 곳으로 돌리십시오."
-
-        # 프롬프트 템플릿 생성
-        prompt = f"""
-    당신은 {suspect['name']}입니다. 나이는 {suspect['age']}세이고, 성별은 {suspect['gender']}입니다.
-    직업은 {suspect['job']}이며, 성격은 다음과 같습니다: "{suspect['description']}".
-    현재 {scenario['location']}에서 {scenario['datetime']}에 발생한 사건에 대해 심문을 받고 있습니다.
-
-    다음은 당신에게 제시된 증거입니다:
-    - {evidence_list}
-
-    심문관이 방금 당신에게 다음과 같이 물었습니다: "{user_message}"
-    당신의 목표는 {goal}
-
-    모든 응답은 한국어로 작성하세요.
-    직접적으로 범인이냐고 묻는 질문에는 무조건적으로 혐의를 부인하세요.
-    """
-        return prompt
+            logger.error(f"Error creating GPT prompt: {str(e)}")
+            return "죄송합니다. 프롬프트 생성 중 오류가 발생했습니다."
+# 프롬프트는 시나리오 DB를 끌어오는 부분을 생각해봐야함
 
 
-
-    async def get_gpt_response(self, prompt):
+    async def get_gpt_response(self, user_message):
         """
         OpenAI GPT API를 호출하여 응답을 생성합니다.
         """
         try:
-            response = client.chat.completions.create(
+            # OpenAI API 호출 (단순 메시지 전달)
+            response = await sync_to_async(client.chat.completions.create)(
                 model="gpt-4",
-                messages=[{"role": "system", "content": prompt}]
+                messages=[{"role": "user", "content": user_message}]
             )
-            return response.choices[0].message.content
+            # 응답에서 메시지 추출 (객체의 속성 접근)
+            if response.choices and len(response.choices) > 0:
+                return response.choices[0].message.content  # 메시지 내용 반환
+            else:
+                logger.error("Invalid GPT response format or empty choices.")
+                return "죄송합니다. GPT 응답 형식에 문제가 발생했습니다."
         except Exception as e:
             logger.error(f"Error generating GPT response: {str(e)}")
             return "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다."
+
+
+
+    @sync_to_async
+    def save_chat_message(self, user_message, gpt_response):
+        """
+        사용자 메시지와 GPT 응답을 데이터베이스에 저장합니다.
+        """
+        try:
+            # 'chat' 앱의 Chat 모델 가져오기
+            Chat = apps.get_model('chat', 'Chat')
+
+            # 새로운 대화 기록을 데이터베이스에 저장
+            Chat.objects.create(
+                suspect_id=self.suspect_id,  # 현재 대화 중인 용의자 ID
+                user_chat=user_message,  # 사용자 메시지
+                suspect_chat=gpt_response  # GPT 응답
+            )
+            logger.info(f"Chat message saved: User: {user_message}, GPT: {gpt_response}")
+        except Exception as e:
+            logger.error(f"Error saving chat message: {str(e)}")
+
+
