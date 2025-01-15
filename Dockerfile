@@ -20,6 +20,10 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt /backend/
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Dockerfile
+RUN python manage.py collectstatic --noinput
+
+
 #실행 명령어
 CMD ["sh", "-c", "python manage.py collectstatic --noinput && \
     python manage.py migrate && \
