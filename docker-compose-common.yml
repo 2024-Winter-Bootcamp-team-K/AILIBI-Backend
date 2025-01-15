@@ -34,8 +34,47 @@ services:
         networks:
             - app_network
 
+    cadvisor:
+        image: gcr.io/cadvisor/cadvisor:latest
+        container_name: cadvisor
+        ports:
+            - "8080:8080"
+        volumes:
+            - /:/rootfs:ro
+            - /var/run:/var/run:rw
+            - /sys:/sys:ro
+            - /var/lib/docker/:/var/lib/docker:ro
+            - /dev/disk/:/dev/disk:ro
+        networks:
+            - app_network
+
+    prometheus:
+        image: prom/prometheus
+        container_name: prometheus
+        ports:
+            - "9090:9090"
+        volumes:
+            - ./prometheus.yml:/etc/prometheus/prometheus.yml
+        networks:
+            - app_network
+
+    grafana:
+        image: grafana/grafana
+        container_name: grafana
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+            - GF_SERVER_HTTP_PORT=4000
+        ports:
+            - "4000:4000"
+        networks:
+            - app_network
+        depends_on:
+            - prometheus
+
 volumes:
   postgres_data:
+  grafana-data:
 
 networks:
   app_network:
