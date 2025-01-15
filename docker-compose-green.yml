@@ -1,0 +1,49 @@
+services:
+    green-backend:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: green-backend
+        volumes:
+            - .:/backend
+        command: sh -c "sleep 10 && 
+                python manage.py collectstatic --noinput &&
+                python manage.py makemigrations && 
+                python manage.py migrate && 
+                daphne -b 0.0.0.0 -p 8001 Backend.asgi:application"
+        restart: on-failure
+        ports:
+            - "8001:8001"
+        environment:
+            DB_NAME: "${DB_NAME}"
+            DB_USER: "${DB_USER}"
+            DB_PASSWORD: "${DB_PASSWORD}"
+            DB_HOST: "postgresql"
+            DB_PORT: "5432"
+            REDIS_HOST: "redis"
+            REDIS_PORT: "6379"
+        networks:
+            - app_network
+
+    green-celery:
+        build: .
+        command: celery -A Backend worker --loglevel=info
+        container_name: green-celery
+        depends_on:
+            - rabbitmq
+            - postgresql
+            - redis
+        environment:
+            DB_NAME: "${DB_NAME}"
+            DB_USER: "${DB_USER}"
+            DB_PASSWORD: "${DB_PASSWORD}"
+            DB_HOST: "postgresql"
+            DB_PORT: "5432"
+            REDIS_HOST: "redis"
+            REDIS_PORT: "6379"
+        networks:
+            - app_network
+
+networks:
+  app_network:
+    driver: bridge
