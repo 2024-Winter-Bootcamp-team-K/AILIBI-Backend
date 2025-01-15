@@ -93,10 +93,18 @@ class ScenarioAPIView(APIView):
         operation_id="시나리오 생성하기",
         operation_description="시나리오 생성하기",
         manual_parameters=[
-            openapi.Parameter('name', openapi.IN_QUERY, description="시나리오 이름", type=openapi.TYPE_STRING),
-            openapi.Parameter('description', openapi.IN_QUERY, description="시나리오 설명", type=openapi.TYPE_STRING),
-            openapi.Parameter('evidence', openapi.IN_QUERY, description="시나리오의 증거", type=openapi.TYPE_ARRAY,
-                              items=openapi.Items(type=openapi.TYPE_STRING)),
+            openapi.Parameter('year', openapi.IN_QUERY, description="연도", type=openapi.TYPE_STRING),
+            openapi.Parameter('month', openapi.IN_QUERY, description="월", type=openapi.TYPE_STRING),
+            openapi.Parameter('day', openapi.IN_QUERY, description="일", type=openapi.TYPE_ARRAY,
+                              items=openapi.Items(type=openapi.TYPE_STRING)),  # items 추가
+            openapi.Parameter('hour', openapi.IN_QUERY, description="시", type=openapi.TYPE_ARRAY,
+                              items=openapi.Items(type=openapi.TYPE_STRING)),  # items 추가
+            openapi.Parameter('minute', openapi.IN_QUERY, description="분", type=openapi.TYPE_ARRAY,
+                              items=openapi.Items(type=openapi.TYPE_STRING)),  # items 추가
+            openapi.Parameter('location', openapi.IN_QUERY, description="위치", type=openapi.TYPE_ARRAY,
+                              items=openapi.Items(type=openapi.TYPE_STRING)),  # items 추가
+            openapi.Parameter('event_type', openapi.IN_QUERY, description="이벤트 타입(살인/도난)", type=openapi.TYPE_ARRAY,
+                              items=openapi.Items(type=openapi.TYPE_STRING)),  # items 추가
         ],
         responses={
             201: openapi.Response('시나리오 생성 성공', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
