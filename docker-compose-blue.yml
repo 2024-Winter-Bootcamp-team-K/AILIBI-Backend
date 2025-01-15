@@ -1,11 +1,9 @@
-version: '3.8'  # 최신 Compose 버전으로 업데이트
-
 services:
-    backend:
+    blue-backend:
         build:
             context: .
             dockerfile: Dockerfile
-        container_name: backend
+        container_name: blue-backend
         volumes:
             - .:/backend
         command: sh -c "sleep 10 && 
@@ -15,13 +13,7 @@ services:
                 daphne -b 0.0.0.0 -p 8000 Backend.asgi:application"
         restart: on-failure
         ports:
-            - 8000:8000
-        expose:
-            - 8000
-        depends_on:
-            - postgresql
-            - rabbitmq
-            - redis
+            - "8000:8000"
         environment:
             DB_NAME: "${DB_NAME}"
             DB_USER: "${DB_USER}"
@@ -30,36 +22,14 @@ services:
             DB_PORT: "5432"
             REDIS_HOST: "redis"
             REDIS_PORT: "6379"
+
         networks:
             - app_network
 
-    postgresql:
-        image: postgres:latest
-        restart: always
-        container_name: postgresql
-        ports:
-            - "5432:5432"
-        environment:
-            POSTGRES_DB: "${DB_NAME}"
-            POSTGRES_USER: "${DB_USER}"
-            POSTGRES_PASSWORD: "${DB_PASSWORD}"
-        volumes:
-            - postgres_data:/var/lib/postgresql/data
-        networks:
-            - app_network
-
-    redis:
-        image: redis:latest
-        container_name: redis
-        ports:
-            - "6379:6379"
-        networks:
-            - app_network
-
-    celery:
+    blue-celery:
         build: .
         command: celery -A Backend worker --loglevel=info
-        container_name: celery
+        container_name: blue-celery
         depends_on:
             - rabbitmq
             - postgresql
@@ -74,21 +44,6 @@ services:
             REDIS_PORT: "6379"
         networks:
             - app_network
-
-    rabbitmq:
-        image: rabbitmq:3-management
-        container_name: rabbitmq
-        ports:
-            - "5672:5672"  # RabbitMQ의 기본 포트
-            - "15672:15672"  # 관리 콘솔 포트
-        environment:
-            RABBITMQ_DEFAULT_USER: guest
-            RABBITMQ_DEFAULT_PASS: guest
-        networks:
-            - app_network
-
-volumes:
-  postgres_data:
 
 networks:
   app_network:
