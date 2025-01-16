@@ -25,9 +25,9 @@ from django.conf.urls.static import static
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Team-K Project",
+        title="Team-K AILIBI",
         default_version='ver.1',
-        description="Team-K Project API 문서",
+        description="Team-K AILIBI API 문서",
         terms_of_service="https://www.google.com/policies/terms/",
     ),
     public=True,
