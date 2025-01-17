@@ -70,6 +70,7 @@ ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -90,6 +91,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -98,6 +100,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://ailibi.click",       # 메인 도메인
+    "https://www.ailibi.click",  # www 서브도메인
+    "http://localhost:3000",     # 개발 환경의 프론트엔드
+    #"https://your-cloudfront-domain.cloudfront.net",  # CloudFront 도메인
+]
+
+CORS_ALLOW_CREDENTIALS = True  # 쿠키 및 인증 정보를 포함한 요청 허용
 
 ROOT_URLCONF = 'Backend.urls'
 
@@ -157,7 +168,13 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Seoul'
 
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
+CSRF_TRUSTED_ORIGINS = [
+    'https://ailibi.click',
+    'https://www.ailibi.click',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+    # "https://your-cloudfront-domain.cloudfront.net",  # CloudFront 도메인
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
