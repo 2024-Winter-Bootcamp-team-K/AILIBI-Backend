@@ -65,7 +65,7 @@ AWS_DEFAULT_ACL = None
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['121.170.225.248', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1']
 
 # Application definition
 
