@@ -24,12 +24,6 @@ services:
             REDIS_PORT: "6379"
         networks:
             - app_network
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.blue-backend.rule=Host(`ailibi.click`)"
-            - "traefik.http.routers.blue-backend.entrypoints=websecure"
-            - "traefik.http.routers.blue-backend.tls.certresolver=letsencrypt"
-            - "traefik.http.services.blue-backend.loadbalancer.server.port=8000"
 
     blue-celery:
         build: .
