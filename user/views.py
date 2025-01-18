@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 #회원 가입
 class UserRegistrationView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
@@ -54,7 +54,7 @@ class UserRegistrationView(APIView):
         data = {"message": "Don't User Get Method"}
         return Response(data, status=status.HTTP_200_OK)
 
-    def post(self, request):
+    async def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -68,7 +68,7 @@ class UserRegistrationView(APIView):
 
 #로그인
 class LoginView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
@@ -106,7 +106,7 @@ class LoginView(APIView):
         data = {"message": "Don't User Get Method"}
         return Response(data, status=status.HTTP_200_OK)
 
-    def post(self, request):
+    async def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
@@ -122,7 +122,7 @@ class LoginView(APIView):
 
 """
 class UserDetailView(APIView):
-    def get(self, request, user_id):
+    async def get(self, request, user_id):
         try:
             # user_id로 사용자 조회
             user = User.objects.get(id=user_id, is_deleted=False)  # 삭제되지 않은 사용자만 조회

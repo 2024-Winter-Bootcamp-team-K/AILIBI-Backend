@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class EvidenceView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
@@ -47,7 +47,7 @@ class EvidenceView(APIView):
             400: "scenario_id is required"
         }
     )
-    def get(self, request):
+    async def get(self, request):
         scenario_id = request.GET.get('scenario_id')
         if scenario_id:
             evidences = Evidence.objects.filter(scenario_id=scenario_id)
@@ -61,7 +61,7 @@ class EvidenceView(APIView):
 
 
 class EvidenceChooseView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
@@ -95,7 +95,7 @@ class EvidenceChooseView(APIView):
             404: "Evidence not found"
         }
     )
-    def get(self, request, evidences_id):
+    async def get(self, request, evidences_id):
         try:
             evidence = Evidence.objects.get(id=evidences_id)
             serializer = EvidenceChooseSerializer(evidence)
