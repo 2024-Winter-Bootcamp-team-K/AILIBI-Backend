@@ -50,7 +50,7 @@ class UserRegistrationView(APIView):
             )
         }
     )
-    def get(self, request):
+    async def get(self, request):
         data = {"message": "Don't User Get Method"}
         return Response(data, status=status.HTTP_200_OK)
 
@@ -102,7 +102,7 @@ class LoginView(APIView):
             )
         }
     )
-    def get(self, request):
+    async def get(self, request):
         data = {"message": "Don't User Get Method"}
         return Response(data, status=status.HTTP_200_OK)
 
