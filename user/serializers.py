@@ -6,13 +6,13 @@ from .models import User
 logger = logging.getLogger(__name__)
 
 #비밀번호 해싱 및 솔트
-def hash_password(password):
+async def hash_password(password):
     password_bytes = password.encode('utf-8')
     hashed = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
     return hashed.decode('utf-8')  # DB에 저장하기 위해 문자열로 변환
 
 #로그인 시 비밀번호 확인
-def check_password(password, hashed):
+async def check_password(password, hashed):
     password_bytes = password.encode('utf-8')
     hashed_bytes = hashed.encode('utf-8')
     return bcrypt.checkpw(password_bytes, hashed_bytes)
@@ -27,19 +27,19 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['name', 'email', 'password', 'password_check']
         extra_kwargs = {'password': {'write_only': True}}
 
-    def validate_email(self, value):
+    async def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             logger.warning(f"user/serializers.py/UserSerializer/validate_email - Email validation failed: {value} is already registered.")
             raise serializers.ValidationError("이미 가입한 이메일입니다.")
         return value
 
-    def validate(self, data):
+    async def validate(self, data):
         if data['password'] != data['password_check']:
             logger.warning("user/serializers.py/UserSerializer/validate - Password validation failed: passwords do not match.")
             raise serializers.ValidationError({"password_check": "비밀번호가 일치하지 않습니다."})
         return data
 
-    def create(self, validated_data):
+    async def create(self, validated_data):
         validated_data.pop('password_check', None)
 
         password = validated_data.pop('password')
@@ -53,7 +53,7 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
-    def validate(self, data):
+    async def validate(self, data):
         email = data['email']
         password = data['password']
         try:
