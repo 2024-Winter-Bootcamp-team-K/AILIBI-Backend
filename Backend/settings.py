@@ -68,7 +68,7 @@ AWS_DEFAULT_ACL = None
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*', 'ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1']
 
 # Application definition
 
@@ -107,6 +107,7 @@ MIDDLEWARE = [
 MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
 
 CORS_ALLOWED_ORIGINS = [
+    "*",
     "https://ailibi.click",       # 메인 도메인
     "https://www.ailibi.click",  # www 서브도메인
     "http://localhost:3000",     # 개발 환경의 프론트엔드
