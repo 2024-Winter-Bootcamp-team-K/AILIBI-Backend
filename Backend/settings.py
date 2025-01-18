@@ -106,17 +106,16 @@ MIDDLEWARE = [
 
 MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
 
-CORS_ALLOWED_ORIGINS = [
-    "*",
-    "https://ailibi.click",       # 메인 도메인
-    "https://www.ailibi.click",  # www 서브도메인
-    "http://localhost:3000",     # 개발 환경의 프론트엔드
-    #"https://your-cloudfront-domain.cloudfront.net",  # CloudFront 도메인
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "https://ailibi.click",       # 메인 도메인
+#     "https://www.ailibi.click",  # www 서브도메인
+#     "http://localhost:3000",     # 개발 환경의 프론트엔드
+#     #"https://your-cloudfront-domain.cloudfront.net",  # CloudFront 도메인
+# ]
 
 CORS_ALLOW_CREDENTIALS = True  # 쿠키 및 인증 정보를 포함한 요청 허용
 
-CORS_ORIGIN_ALLOW_ALL = True  # 모든 요청 허용 개발 단계만 적용
+CORS_ALLOW_ALL_ORIGINS = True  # 모든 요청 허용 개발 단계만 적용
 
 CORS_ALLOW_METHODS = [
     "GET",
