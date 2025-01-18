@@ -11,6 +11,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 class EvidenceView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+
     @swagger_auto_schema(
         operation_id= "시나리오 ID로 증거 목록 조회",
         operation_description="{scenario_id}에 속한 모든 증거 불러오기",
@@ -54,6 +61,12 @@ class EvidenceView(APIView):
 
 
 class EvidenceChooseView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
     @swagger_auto_schema(
         operation_id= "증거 ID로 선택한 증거 조회",

@@ -16,6 +16,12 @@ def websocket_test(request):
 
 
 class WebSocketConnectAPIView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     """
     WebSocket 연결 초기화 API
     """
@@ -56,6 +62,12 @@ class WebSocketConnectAPIView(APIView):
 
 
 class WebSocketMessageAPIView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     """
     WebSocket 메시지 전송 API
     """
@@ -96,6 +108,12 @@ class WebSocketMessageAPIView(APIView):
 
 
 class WebSocketStatusAPIView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     """
     WebSocket 상태 확인 API
     """

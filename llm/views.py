@@ -88,6 +88,12 @@ def truncate_prompt(prompt, max_length=1000):
 
 
 class ScenarioAPIView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
     @swagger_auto_schema(
         operation_id="시나리오 생성하기",

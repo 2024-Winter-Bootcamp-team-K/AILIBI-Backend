@@ -16,6 +16,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ChangeSoundView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     """
     TTS 작업 생성 및 결과 반환 API
     - 3개의 고정된 task_id에 따라 voice_id를 설정하고 작업을 생성합니다.
@@ -102,6 +108,12 @@ class ChangeSoundView(APIView):
 
 
 class GetAudioResultView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     """
     TTS 작업 결과 API
     - 고정된 task_id를 기반으로 작업 상태를 확인하고, 작업 완료 시 결과 파일을 반환합니다.

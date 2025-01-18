@@ -13,6 +13,12 @@ logger = logging.getLogger(__name__)
 
 #회원 가입
 class UserRegistrationView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
     @swagger_auto_schema(
         operation_id="회원가입",
@@ -59,6 +65,12 @@ class UserRegistrationView(APIView):
 
 #로그인
 class LoginView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
     @swagger_auto_schema(
         operation_id="로그인",
