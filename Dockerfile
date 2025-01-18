@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libssl-dev \
     gcc \
+    postgresql-dev \
     && apt-get clean
 
 #의존성 파일 복사 및 설치(캐시 삭제)
