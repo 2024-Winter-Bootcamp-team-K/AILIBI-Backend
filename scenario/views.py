@@ -21,7 +21,12 @@ logger = logging.getLogger(__name__)
 
 # /histories?user_id={userId}, /histories?scenario_id={scenarioId}, /histories?suspect_id={suspectId}
 class HistoriesView(APIView):
-
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'GET, DELETE, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
     @swagger_auto_schema(
         operation_id="모든 플레이 기록 불러오기/선택한 플레이 기록 불러오기/선택한 플레이의 용의자와 심문 내용 불러오기",
@@ -152,8 +157,12 @@ class HistoriesView(APIView):
 
 
 class ScenariosView(APIView):
-
-
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'GET, PUT, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
     @swagger_auto_schema(
         operation_id="시나리오 불러오기",

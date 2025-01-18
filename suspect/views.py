@@ -12,6 +12,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 class SuspectsView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     @swagger_auto_schema(
         operation_id= "시나리오 ID로 용의자 목록 조회",
         operation_description="{scenario_id}에 속한 모든 용의자 불러오기",
@@ -60,6 +66,12 @@ class SuspectsView(APIView):
         return Response({"suspects": suspect_data}, status=status.HTTP_200_OK)
 
 class SuspectDetailView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
     @swagger_auto_schema(
         operation_id="용의자 ID로 선택한 용의자 조회",
@@ -102,6 +114,12 @@ class SuspectDetailView(APIView):
 
 
 class SuspectsChooseView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
     @swagger_auto_schema(
         operation_id="용의자 ID로 범인 지목",
