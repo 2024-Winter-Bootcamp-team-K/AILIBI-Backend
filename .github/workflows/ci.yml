@@ -79,7 +79,7 @@ jobs:
           # 1. 프라이빗 키를 임시 파일로 저장
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > /tmp/ec2_key.pem
           chmod 400 /tmp/ec2_key.pem
-          
+
           # 2. SSH로 EC2 서버에 접속
           ssh -i /tmp/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd /path/to/your/project
@@ -87,6 +87,9 @@ jobs:
             docker-compose -f docker-compose-common.yml -f docker-compose-blue.yml pull
             docker-compose -f docker-compose-common.yml -f docker-compose-blue.yml up -d --build
           EOF
+
+          # 3. 임시 파일 삭제
+          rm -f /tmp/ec2_key.pem
 
 #      # 4. Green 환경 배포 (Green 환경으로 전환 시 사용)
 #      - name: Deploy Green Environment
@@ -111,3 +114,6 @@ jobs:
 #            docker-compose -f docker-compose-common.yml -f docker-compose-green.yml pull
 #            docker-compose -f docker-compose-common.yml -f docker-compose-green.yml up -d --build
 #          EOF
+#
+#          # 3. 임시 파일 삭제
+#          rm -f /tmp/ec2_key.pem
