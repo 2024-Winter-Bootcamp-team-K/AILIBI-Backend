@@ -110,6 +110,8 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True  # 쿠키 및 인증 정보를 포함한 요청 허용
 
+CORS_ORIGIN_ALLOW_ALL = True  # 모든 요청 허용 개발 단계만 적용
+
 ROOT_URLCONF = 'Backend.urls'
 
 TEMPLATES = [
