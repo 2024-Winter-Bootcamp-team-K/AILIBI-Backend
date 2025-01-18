@@ -42,10 +42,6 @@ class WebSocketConnectAPIView(APIView):
             400: openapi.Response(description="잘못된 요청 데이터입니다."),
         },
     )
-    def get(self, request):
-        data = {"message": "Don't User Get Method"}
-        return Response(data, status=status.HTTP_200_OK)
-
     def post(self, request):
         serializer = WebSocketConnectionSerializer(data=request.data)
         if serializer.is_valid():
@@ -64,6 +60,10 @@ class WebSocketConnectAPIView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def get(self, request):
+        data = {"message": "Don't User Get Method"}
+        return Response(data, status=status.HTTP_200_OK)
+    
 class WebSocketMessageAPIView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
@@ -91,10 +91,6 @@ class WebSocketMessageAPIView(APIView):
             400: openapi.Response(description="잘못된 요청 데이터입니다."),
         },
     )
-    def get(self, request):
-        data = {"message": "Don't User Get Method"}
-        return Response(data, status=status.HTTP_200_OK)
-
     def post(self, request):
         serializer = WebSocketMessageSerializer(data=request.data)
         if serializer.is_valid():
@@ -113,6 +109,9 @@ class WebSocketMessageAPIView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def get(self, request):
+        data = {"message": "Don't User Get Method"}
+        return Response(data, status=status.HTTP_200_OK)
 
 class WebSocketStatusAPIView(APIView):
     def options(self, request, *args, **kwargs):

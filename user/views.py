@@ -50,10 +50,6 @@ class UserRegistrationView(APIView):
             )
         }
     )
-    def get(self, request):
-        data = {"message": "Don't User Get Method"}
-        return Response(data, status=status.HTTP_200_OK)
-
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -66,6 +62,9 @@ class UserRegistrationView(APIView):
         logger.warning(f"user/views.py/UserRegistrationView - User registration failed : {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def get(self, request):
+        data = {"message": "Don't User Get Method"}
+        return Response(data, status=status.HTTP_200_OK)
 #로그인
 class LoginView(APIView):
     def options(self, request, *args, **kwargs):
@@ -102,10 +101,6 @@ class LoginView(APIView):
             )
         }
     )
-    def get(self, request):
-        data = {"message": "Don't User Get Method"}
-        return Response(data, status=status.HTTP_200_OK)
-
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -120,6 +115,9 @@ class LoginView(APIView):
         logger.warning(f"user/views.py/LoginView - Login attempt failed:, {serializer.errors}")
         return Response({"Error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+    def get(self, request):
+        data = {"message": "Don't User Get Method"}
+        return Response(data, status=status.HTTP_200_OK)
 """
 class UserDetailView(APIView):
     async def get(self, request, user_id):

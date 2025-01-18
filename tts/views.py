@@ -73,10 +73,6 @@ class ChangeSoundView(APIView):
             ),
         }
     )
-    def get(self, request):
-        data = {"message": "Don't User Get Method"}
-        return Response(data, status=status.HTTP_200_OK)
-
     def post(self, request):
         # 클라이언트 요청에서 sentence 가져오기
         sentence = request.data.get('sentence')
@@ -109,6 +105,9 @@ class ChangeSoundView(APIView):
         logger.info(f"tts/views.py/ChangeSoundView - Allowed task_ids. {task_id}")
         return Response({"task_id": task.id}, status=status.HTTP_202_ACCEPTED)
 
+    def get(self, request):
+        data = {"message": "Don't User Get Method"}
+        return Response(data, status=status.HTTP_200_OK)
 
 class GetAudioResultView(APIView):
     def options(self, request, *args, **kwargs):

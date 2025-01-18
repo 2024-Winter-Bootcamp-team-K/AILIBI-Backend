@@ -224,7 +224,6 @@ class ScenariosView(APIView):
             404: openapi.Response(description="Scenario not found")
         }
     )
-
     def put(self, request, scenario_id):
         try:
             scenario = Scenario.objects.get(id=scenario_id)
