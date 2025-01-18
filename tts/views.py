@@ -16,10 +16,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ChangeSoundView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
     """
@@ -73,8 +73,11 @@ class ChangeSoundView(APIView):
             ),
         }
     )
+    async def get(self, request):
+        data = {"message": "Don't User Get Method"}
+        return Response(data, status=status.HTTP_200_OK)
 
-    def post(self, request):
+    async def post(self, request):
         # 클라이언트 요청에서 sentence 가져오기
         sentence = request.data.get('sentence')
 
@@ -108,7 +111,7 @@ class ChangeSoundView(APIView):
 
 
 class GetAudioResultView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
@@ -177,7 +180,7 @@ class GetAudioResultView(APIView):
         }
     )
 
-    def get(self, request, task_id, *args, **kwargs):
+    async def get(self, request, task_id, *args, **kwargs):
         """
         TTS 작업 상태 확인 및 Base64 오디오 데이터 반환.
         """

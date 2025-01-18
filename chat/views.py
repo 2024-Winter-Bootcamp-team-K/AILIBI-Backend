@@ -16,10 +16,10 @@ def websocket_test(request):
 
 
 class WebSocketConnectAPIView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
     """
@@ -42,7 +42,11 @@ class WebSocketConnectAPIView(APIView):
             400: openapi.Response(description="잘못된 요청 데이터입니다."),
         },
     )
-    def post(self, request):
+    async def get(self, request):
+        data = {"message": "Don't User Get Method"}
+        return Response(data, status=status.HTTP_200_OK)
+
+    async def post(self, request):
         serializer = WebSocketConnectionSerializer(data=request.data)
         if serializer.is_valid():
             suspect_id = serializer.validated_data['suspect_id']
@@ -60,12 +64,11 @@ class WebSocketConnectAPIView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class WebSocketMessageAPIView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
     """
@@ -88,7 +91,11 @@ class WebSocketMessageAPIView(APIView):
             400: openapi.Response(description="잘못된 요청 데이터입니다."),
         },
     )
-    def post(self, request):
+    async def get(self, request):
+        data = {"message": "Don't User Get Method"}
+        return Response(data, status=status.HTTP_200_OK)
+
+    async def post(self, request):
         serializer = WebSocketMessageSerializer(data=request.data)
         if serializer.is_valid():
             message = serializer.validated_data['message']
@@ -108,7 +115,7 @@ class WebSocketMessageAPIView(APIView):
 
 
 class WebSocketStatusAPIView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
@@ -132,7 +139,7 @@ class WebSocketStatusAPIView(APIView):
             ),
         },
     )
-    def get(self, request):
+    async def get(self, request):
         # Redis에서 연결 상태 확인 (예제)
         redis_conn = redis.Redis(host='localhost', port=6379, db=0)
         suspect_ids = redis_conn.keys("websocket:suspect:*")

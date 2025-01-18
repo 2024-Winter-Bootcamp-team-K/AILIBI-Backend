@@ -8,7 +8,8 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 from rest_framework.views import APIView
-
+from rest_framework.response import Response
+from rest_framework import status
 from scenario.models import Scenario
 from evidence.models import Evidence
 from suspect.models import Suspect
@@ -92,7 +93,7 @@ class ScenarioAPIView(APIView):
     async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
 
@@ -120,7 +121,9 @@ class ScenarioAPIView(APIView):
             502: openapi.Response(description="입력 값이 잘 못 되었거나 HTTP method가 잘 못되었습니다.")
         }
     )
-
+    async def get(self, request):
+        data = {"message": "Don't User Get Method"}
+        return Response(data, status=status.HTTP_200_OK)
 
     async def post(self, request):
         #디버그 옵션
