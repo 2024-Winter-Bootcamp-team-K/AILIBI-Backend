@@ -356,3 +356,5 @@ SWAGGER_SETTINGS = {
     'DEFAULT_API_URL': 'https://www.ailibi.click/',
     'SCHEMA': 'https',
 }
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
