@@ -121,7 +121,7 @@ class ScenarioAPIView(APIView):
             502: openapi.Response(description="입력 값이 잘 못 되었거나 HTTP method가 잘 못되었습니다.")
         }
     )
-    def get(self, request):
+    async def get(self, request):
         data = {"message": "Don't User Get Method"}
         return Response(data, status=status.HTTP_200_OK)
 
