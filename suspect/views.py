@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class SuspectsView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
@@ -47,7 +47,7 @@ class SuspectsView(APIView):
             400: "scenario_id가 필요합니다."
         }
     )
-    def get(self, request):
+    async def get(self, request):
         scenario_id = request.GET.get('scenario_id')
         if not scenario_id:
             logger.error(f"suspect/views.py/SuspectsView - error : scenario_id is required")
@@ -66,7 +66,7 @@ class SuspectsView(APIView):
         return Response({"suspects": suspect_data}, status=status.HTTP_200_OK)
 
 class SuspectDetailView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
@@ -96,7 +96,7 @@ class SuspectDetailView(APIView):
             404: "Suspect or Chat not found"
         }
     )
-    def get(self, request, suspect_id):
+    async def get(self, request, suspect_id):
         try:
             suspect = Suspect.objects.get(id=suspect_id)
             chats = Chat.objects.filter(suspect_id=suspect_id)
@@ -114,7 +114,7 @@ class SuspectDetailView(APIView):
 
 
 class SuspectsChooseView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
@@ -149,7 +149,7 @@ class SuspectsChooseView(APIView):
             404: "Suspect not found"
         }
     )
-    def get(self, request):
+    async def get(self, request):
         suspect_id = request.GET.get('suspect_id')
 
         if not suspect_id:

@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # /histories?user_id={userId}, /histories?scenario_id={scenarioId}, /histories?suspect_id={suspectId}
 class HistoriesView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, DELETE, OPTIONS'
@@ -50,7 +50,7 @@ class HistoriesView(APIView):
         }
     )
 
-    def get(self, request):
+    async def get(self, request):
         user_id = request.query_params.get('user_id')           #모든 플레이 기록 불러오기
         scenario_id = request.query_params.get('scenario_id')   #선택한 플레이 기록 불러오기
         suspect_id = request.query_params.get('suspect_id')     # 선택한 용의자와 심문 내용 불러오기
@@ -137,7 +137,7 @@ class HistoriesView(APIView):
         }
     )
 
-    def delete(self, request):
+    async def delete(self, request):
         scenario_id = request.query_params.get('scenario_id')
 
         if scenario_id:
@@ -157,7 +157,7 @@ class HistoriesView(APIView):
 
 
 class ScenariosView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, PUT, OPTIONS'
@@ -175,7 +175,7 @@ class ScenariosView(APIView):
         }
     )
 
-    def get(self, request, scenario_id):
+    async def get(self, request, scenario_id):
         try:
             scenario = Scenario.objects.get(id=scenario_id)
             suspects = Suspect.objects.filter(scenario_id=scenario_id)
@@ -225,7 +225,7 @@ class ScenariosView(APIView):
         }
     )
 
-    def put(self, request, scenario_id):
+    async def put(self, request, scenario_id):
         try:
             scenario = Scenario.objects.get(id=scenario_id)
         except Scenario.DoesNotExist:

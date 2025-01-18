@@ -35,13 +35,14 @@ s3_client = boto3.client(
     region_name=settings.AWS_S3_REGION_NAME,
 )
 
-def get_scenario_image(location, event_type):
+async def get_scenario_image(location, event_type):
     # S3 파일 이름 형식: "scenario/{location} {event_type}.png"
     s3_scenario_name = f"scenario/{location}{event_type}.png"
     s3_scenario_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{s3_scenario_name}"
     return s3_scenario_url
 
-def get_suspect_images():
+
+async def get_suspect_images():
     # 여성 이미지 파일 리스트
     female_files = [f"suspect/여성{i}.png" for i in range(1, 5)]
     # 남성 이미지 파일 리스트
@@ -60,7 +61,7 @@ def get_suspect_images():
 
     return female_image_url, male_image_urls
 
-def upload_to_s3(file_name, file_data, content_type):
+async def upload_to_s3(file_name, file_data, content_type):
     """
     파일을 AWS S3에 업로드하고 URL 반환.
     """
@@ -80,7 +81,7 @@ def upload_to_s3(file_name, file_data, content_type):
         logger.error(f"Failed to upload to S3: {e}")
         return None
 
-def truncate_prompt(prompt, max_length=1000):
+async def truncate_prompt(prompt, max_length=1000):
     """Truncate the prompt to ensure it does not exceed max_length."""
     if len(prompt) > max_length:
         return prompt[:max_length - 3] + "..."
@@ -88,7 +89,7 @@ def truncate_prompt(prompt, max_length=1000):
 
 
 class ScenarioAPIView(APIView):
-    def options(self, request, *args, **kwargs):
+    async def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
@@ -121,7 +122,7 @@ class ScenarioAPIView(APIView):
     )
 
 
-    def post(self, request):
+    async def post(self, request):
         #디버그 옵션
         debug = False
 
