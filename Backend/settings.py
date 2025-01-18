@@ -104,6 +104,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
+
 CORS_ALLOWED_ORIGINS = [
     "https://ailibi.click",       # 메인 도메인
     "https://www.ailibi.click",  # www 서브도메인
