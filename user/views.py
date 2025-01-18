@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 #회원 가입
 class UserRegistrationView(APIView):
-    async def options(self, request, *args, **kwargs):
+    def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
@@ -50,11 +50,11 @@ class UserRegistrationView(APIView):
             )
         }
     )
-    async def get(self, request):
+    def get(self, request):
         data = {"message": "Don't User Get Method"}
         return Response(data, status=status.HTTP_200_OK)
 
-    async def post(self, request):
+    def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -68,7 +68,7 @@ class UserRegistrationView(APIView):
 
 #로그인
 class LoginView(APIView):
-    async def options(self, request, *args, **kwargs):
+    def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
@@ -102,11 +102,11 @@ class LoginView(APIView):
             )
         }
     )
-    async def get(self, request):
+    def get(self, request):
         data = {"message": "Don't User Get Method"}
         return Response(data, status=status.HTTP_200_OK)
 
-    async def post(self, request):
+    def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']

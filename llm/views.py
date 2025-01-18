@@ -90,7 +90,7 @@ async def truncate_prompt(prompt, max_length=1000):
 
 
 class ScenarioAPIView(APIView):
-    async def options(self, request, *args, **kwargs):
+    def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
@@ -121,11 +121,11 @@ class ScenarioAPIView(APIView):
             502: openapi.Response(description="입력 값이 잘 못 되었거나 HTTP method가 잘 못되었습니다.")
         }
     )
-    async def get(self, request):
+    def get(self, request):
         data = {"message": "Don't User Get Method"}
         return Response(data, status=status.HTTP_200_OK)
 
-    async def post(self, request):
+    def post(self, request):
         #디버그 옵션
         debug = False
 
