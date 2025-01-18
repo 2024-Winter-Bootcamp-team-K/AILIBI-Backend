@@ -54,6 +54,9 @@ AWS_SECRET_ACCESS_KEY = secret_data.get('AWS_SECRET_ACCESS_KEY', os.getenv('AWS_
 AWS_STORAGE_BUCKET_NAME = secret_data.get('AWS_STORAGE_BUCKET_NAME', os.getenv('AWS_STORAGE_BUCKET_NAME', 'your-storage-bucket'))
 AWS_S3_REGION_NAME = secret_data.get('AWS_S3_REGION_NAME', os.getenv('AWS_S3_REGION_NAME', 'your-s3-region-name'))
 
+EC2_KEY = secret_data.get('EC2_KEY', os.getenv('EC2_KEY', 'your-ec2-key'))
+EC2_HOST = secret_data.get('EC2_HOST', os.getenv('EC2_HOST', 'your-ec2-host'))
+EC2_NAME = secret_data.get('EC2_NAME', os.getenv('EC2_NAME', 'your-ec2-name'))
 # S3 Storage settings
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_S3_FILE_OVERWRITE = False  # 같은 이름 파일 덮어쓰기 방지
