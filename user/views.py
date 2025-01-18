@@ -16,7 +16,7 @@ class UserRegistrationView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
 
@@ -50,6 +50,9 @@ class UserRegistrationView(APIView):
             )
         }
     )
+    def get(self, request):
+        data = {"message": "Don't User Get Method"}
+        return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -68,7 +71,7 @@ class LoginView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
 
@@ -99,6 +102,9 @@ class LoginView(APIView):
             )
         }
     )
+    def get(self, request):
+        data = {"message": "Don't User Get Method"}
+        return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
