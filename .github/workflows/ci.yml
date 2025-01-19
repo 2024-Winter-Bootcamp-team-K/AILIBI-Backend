@@ -19,6 +19,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+       # 2. Docker Compose 설치
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
       # 2. 환경 변수 설정
       - name: Export environment variables
         run: |
@@ -33,7 +39,6 @@ jobs:
       # 3. Docker Compose 빌드 및 테스트
       - name: Build and Test with Docker
         env:
-          DEBIAN_FRONTEND: noninteractive
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
@@ -42,9 +47,9 @@ jobs:
           REDIS_HOST: redis
           REDIS_PORT: 6379
         run: |
-          docker compose -f docker-compose-common.yml -f docker-compose-blue.yml down --volumes --remove-orphans || true
-          docker compose -f docker-compose-common.yml -f docker-compose-blue.yml build
-          docker compose -f docker-compose-common.yml -f docker-compose-blue.yml run --rm blue-backend sh -c "python manage.py test"
+          docker-compose -f docker-compose-common.yml -f docker-compose-blue.yml down --volumes --remove-orphans || true
+          docker-compose -f docker-compose-common.yml -f docker-compose-blue.yml build
+          docker-compose -f docker-compose-common.yml -f docker-compose-blue.yml run --rm blue-backend sh -c "python manage.py test"
           docker system prune -af
 
   deploy:
