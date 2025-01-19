@@ -11,6 +11,7 @@ on:
 
 jobs:
   test:
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -73,6 +74,7 @@ jobs:
           # 2. SSH로 EC2 서버에 접속
           ssh -i /tmp/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd /home/ubuntu/Backend
+            docker compose version
             docker compose -f docker-compose-common.yml -f docker-compose-blue.yml down --volumes --remove-orphans || true
             docker compose -f docker-compose-common.yml -f docker-compose-blue.yml up -d --build
             docker system prune -af
