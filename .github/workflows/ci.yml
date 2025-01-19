@@ -52,9 +52,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 코드 체크아웃
+      # 1. dveleop 브렌치 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: develop
 
       # 2. Blue 환경 배포
       - name: Deploy Blue Environment
