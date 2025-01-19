@@ -39,7 +39,8 @@ s3_client = boto3.client(
 async def get_scenario_image(location, event_type):
     # S3 파일 이름 형식: "scenario/{location} {event_type}.png"
     s3_scenario_name = f"scenario/{location}{event_type}.png"
-    s3_scenario_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{s3_scenario_name}"
+    CLOUDFRONT_URL = "https://d3muz3cxd0m51v.cloudfront.net/"  # CloudFront 도메인
+    s3_scenario_url = f"{CLOUDFRONT_URL}/{s3_scenario_name}"
     return s3_scenario_url
 
 
@@ -54,10 +55,10 @@ async def get_suspect_images():
     male_images = random.sample(male_files, 2)  # 두 명의 남성 선택, 중복 방지
 
     # S3 URL 생성
-    female_image_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{female_image}"
+    CLOUDFRONT_URL = "https://d3muz3cxd0m51v.cloudfront.net/"  # CloudFront 도메인
+    female_image_url = f"{CLOUDFRONT_URL}/{female_image}"
     male_image_urls = [
-        f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{male_image}"
-        for male_image in male_images
+        f"{CLOUDFRONT_URL}/{male_image}" for male_image in male_images
     ]
 
     return female_image_url, male_image_urls
@@ -76,7 +77,8 @@ async def upload_to_s3(file_name, file_data, content_type):
             Body=file_data,
             ContentType=content_type,
         )
-        s3_evidence_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/{s3_key}"
+        CLOUDFRONT_URL = "https://d3muz3cxd0m51v.cloudfront.net/"  # CloudFront 도메인
+        s3_evidence_url = f"{CLOUDFRONT_URL}/{s3_key}"
         return s3_evidence_url
     except Exception as e:
         logger.error(f"Failed to upload to S3: {e}")
