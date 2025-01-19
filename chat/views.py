@@ -19,7 +19,7 @@ class WebSocketConnectAPIView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
     """
@@ -42,10 +42,6 @@ class WebSocketConnectAPIView(APIView):
             400: openapi.Response(description="잘못된 요청 데이터입니다."),
         },
     )
-    def get(self, request):
-        data = {"message": "Don't User Get Method"}
-        return Response(data, status=status.HTTP_200_OK)
-
     def post(self, request):
         serializer = WebSocketConnectionSerializer(data=request.data)
         if serializer.is_valid():
@@ -63,12 +59,12 @@ class WebSocketConnectAPIView(APIView):
                 status=status.HTTP_202_ACCEPTED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
 class WebSocketMessageAPIView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
     """
@@ -91,10 +87,6 @@ class WebSocketMessageAPIView(APIView):
             400: openapi.Response(description="잘못된 요청 데이터입니다."),
         },
     )
-    def get(self, request):
-        data = {"message": "Don't User Get Method"}
-        return Response(data, status=status.HTTP_200_OK)
-
     def post(self, request):
         serializer = WebSocketMessageSerializer(data=request.data)
         if serializer.is_valid():
@@ -112,7 +104,6 @@ class WebSocketMessageAPIView(APIView):
                 status=status.HTTP_202_ACCEPTED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class WebSocketStatusAPIView(APIView):
     def options(self, request, *args, **kwargs):

@@ -16,7 +16,7 @@ class UserRegistrationView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
 
@@ -50,10 +50,6 @@ class UserRegistrationView(APIView):
             )
         }
     )
-    def get(self, request):
-        data = {"message": "Don't User Get Method"}
-        return Response(data, status=status.HTTP_200_OK)
-
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -65,13 +61,12 @@ class UserRegistrationView(APIView):
             }, status=status.HTTP_201_CREATED)
         logger.warning(f"user/views.py/UserRegistrationView - User registration failed : {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 #로그인
 class LoginView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
 
@@ -102,10 +97,6 @@ class LoginView(APIView):
             )
         }
     )
-    def get(self, request):
-        data = {"message": "Don't User Get Method"}
-        return Response(data, status=status.HTTP_200_OK)
-
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -119,7 +110,6 @@ class LoginView(APIView):
             }, status=status.HTTP_201_CREATED)
         logger.warning(f"user/views.py/LoginView - Login attempt failed:, {serializer.errors}")
         return Response({"Error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
 """
 class UserDetailView(APIView):
     async def get(self, request, user_id):

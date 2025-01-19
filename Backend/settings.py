@@ -115,8 +115,6 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True  # 쿠키 및 인증 정보를 포함한 요청 허용
 
-CORS_ORIGIN_ALLOW_ALL = True  # 모든 요청 허용 개발 단계만 적용
-
 CORS_ALLOW_METHODS = [
     "GET",
     "POST",
@@ -344,3 +342,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+        }
+    },
+    'DEFAULT_API_URL': 'https://www.ailibi.click/',
+    'SCHEMA': 'https',
+}
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
