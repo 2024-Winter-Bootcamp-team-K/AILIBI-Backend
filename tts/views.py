@@ -19,7 +19,7 @@ class ChangeSoundView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
     """
@@ -30,6 +30,7 @@ class ChangeSoundView(APIView):
     @swagger_auto_schema(
         operation_id="TTS 작업 생성 및 결과 반환 API",
         operation_description="3개의 고정된 task_id에 따라 voice_id를 설정하고 작업을 생성합니다.",
+        method="POST",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -105,10 +106,6 @@ class ChangeSoundView(APIView):
         logger.info(f"tts/views.py/ChangeSoundView - Allowed task_ids. {task_id}")
         return Response({"task_id": task.id}, status=status.HTTP_202_ACCEPTED)
 
-    def get(self, request):
-        data = {"message": "Don't User Get Method"}
-        return Response(data, status=status.HTTP_200_OK)
-
 class GetAudioResultView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
@@ -124,6 +121,7 @@ class GetAudioResultView(APIView):
     @swagger_auto_schema(
         operation_id="TTS 작업 결과 API",
         operation_description="고정된 task_id를 기반으로 작업 상태를 확인하고, 작업 완료 시 결과 파일을 반환합니다.",
+        method="GET",
         manual_parameters=[
             openapi.Parameter(
                 'task_id', openapi.IN_PATH,

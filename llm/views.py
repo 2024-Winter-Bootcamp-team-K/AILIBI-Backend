@@ -93,13 +93,14 @@ class ScenarioAPIView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
 
     @swagger_auto_schema(
         operation_id="시나리오 생성하기",
         operation_description="시나리오 생성하기",
+        method="POST",
         manual_parameters=[
             openapi.Parameter('year', openapi.IN_QUERY, description="연도", type=openapi.TYPE_STRING),
             openapi.Parameter('month', openapi.IN_QUERY, description="월", type=openapi.TYPE_STRING),
@@ -121,10 +122,6 @@ class ScenarioAPIView(APIView):
             502: openapi.Response(description="입력 값이 잘 못 되었거나 HTTP method가 잘 못되었습니다.")
         }
     )
-    def get(self, request):
-        data = {"message": "Don't User Get Method"}
-        return Response(data, status=status.HTTP_200_OK)
-
     def post(self, request):
         #디버그 옵션
         debug = False

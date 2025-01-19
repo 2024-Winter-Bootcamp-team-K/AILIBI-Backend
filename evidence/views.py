@@ -21,6 +21,7 @@ class EvidenceView(APIView):
     @swagger_auto_schema(
         operation_id= "시나리오 ID로 증거 목록 조회",
         operation_description="{scenario_id}에 속한 모든 증거 불러오기",
+        method="GET",
         manual_parameters=[
             openapi.Parameter(
                 'scenario_id', openapi.IN_QUERY,
@@ -71,6 +72,7 @@ class EvidenceChooseView(APIView):
     @swagger_auto_schema(
         operation_id= "증거 ID로 선택한 증거 조회",
         operation_description="선택한 {evidence_id} 불러오기",
+        method="GET",
         responses={
             200: openapi.Response(
                 description="Evidence details",

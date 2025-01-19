@@ -21,6 +21,7 @@ class SuspectsView(APIView):
     @swagger_auto_schema(
         operation_id= "시나리오 ID로 용의자 목록 조회",
         operation_description="{scenario_id}에 속한 모든 용의자 불러오기",
+        method="GET",
         manual_parameters=[
             openapi.Parameter(
                 'scenario_id', openapi.IN_QUERY,
@@ -76,6 +77,7 @@ class SuspectDetailView(APIView):
     @swagger_auto_schema(
         operation_id="용의자 ID로 선택한 용의자 조회",
         operation_description="선택한 {suspect_id} 불러오기",
+        method="GET",
         responses={
             200: openapi.Response(
                 description="용의자 컬럼",
@@ -124,6 +126,7 @@ class SuspectsChooseView(APIView):
     @swagger_auto_schema(
         operation_id="용의자 ID로 범인 지목",
         operation_description="범인 지목",
+        method="GET",
         manual_parameters=[
             openapi.Parameter(
                 'suspect_id', openapi.IN_QUERY,
