@@ -40,9 +40,9 @@ jobs:
           REDIS_HOST: redis
           REDIS_PORT: 6379
         run: |
-          docker-compose -f docker-compose-common.yml -f docker-compose-blue.yml down --volumes --remove-orphans || true
-          docker-compose -f docker-compose-common.yml -f docker-compose-blue.yml build
-          docker-compose -f docker-compose-common.yml -f docker-compose-blue.yml run --rm blue-backend sh -c "python manage.py test"
+          docker compose -f docker-compose-common.yml -f docker-compose-blue.yml down --volumes --remove-orphans || true
+          docker compose -f docker-compose-common.yml -f docker-compose-blue.yml build
+          docker compose -f docker-compose-common.yml -f docker-compose-blue.yml run --rm blue-backend sh -c "python manage.py test"
           docker system prune -af
 
   deploy:
@@ -73,8 +73,8 @@ jobs:
           # 2. SSH로 EC2 서버에 접속
           ssh -i /tmp/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd /home/ubuntu/Backend
-            docker-compose -f docker-compose-common.yml -f docker-compose-blue.yml down --volumes --remove-orphans || true
-            docker-compose -f docker-compose-common.yml -f docker-compose-blue.yml up -d --build
+            docker compose -f docker-compose-common.yml -f docker-compose-blue.yml down --volumes --remove-orphans || true
+            docker compose -f docker-compose-common.yml -f docker-compose-blue.yml up -d --build
             docker system prune -af
           EOF
 
@@ -100,8 +100,8 @@ jobs:
 #          # 2. SSH로 EC2 서버에 접속
 #          ssh -i /tmp/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
 #            cd /home/ubuntu/Backend
-#            docker-compose -f docker-compose-common.yml -f docker-compose-green.yml down --volumes --remove-orphans || true
-#            docker-compose -f docker-compose-common.yml -f docker-compose-green.yml up -d --build
+#            docker compose -f docker-compose-common.yml -f docker-compose-green.yml down --volumes --remove-orphans || true
+#            docker compose -f docker-compose-common.yml -f docker-compose-green.yml up -d --build
 #            docker system prune -af
 #          EOF
 #
