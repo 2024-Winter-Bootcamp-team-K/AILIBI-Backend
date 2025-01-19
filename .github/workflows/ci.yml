@@ -48,7 +48,6 @@ jobs:
 
   deploy:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/release'
-    needs: test
     runs-on: ubuntu-latest
 
     steps:
