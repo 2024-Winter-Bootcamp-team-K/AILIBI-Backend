@@ -59,7 +59,7 @@ class HistoriesView(APIView):
             user = get_object_or_404(User, id=user_id)
             scenarios = Scenario.objects.filter(user_id=user.id)
             serializer = His_ScenarioSerializer(scenarios, many=True)
-            logger.info(f"scenario/views.py/HistoriesView - error: Invalid JSON data")
+            logger.info(f"scenario/views.py/HistoriesView - Load scenario: {serializer.data}")
             return Response({"scenarios": serializer.data}, status=status.HTTP_200_OK)
 
         elif scenario_id:
@@ -86,7 +86,7 @@ class HistoriesView(APIView):
 
             # 최종 응답 데이터 구성
             response_data = {
-                "scenarios": [scenario_data],
+                "scenarios": scenario_data,
                 "suspects": suspects_data,
                 "evidences": evidence_data
             }

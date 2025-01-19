@@ -57,9 +57,7 @@ class SuspectsView(APIView):
         suspect_data = []
 
         for suspect in suspects:
-            chat = Chat.objects.filter(suspect_id=suspect.id).first()
             data = SuspectSerializer(suspect).data
-            data['init_chat'] = chat.init_chat if chat else ""
             suspect_data.append(data)
 
         logger.info(f"suspect/views.py/SuspectsView - {scenario_id} : {suspect_data}")
@@ -99,10 +97,7 @@ class SuspectDetailView(APIView):
     def get(self, request, suspect_id):
         try:
             suspect = Suspect.objects.get(id=suspect_id)
-            chats = Chat.objects.filter(suspect_id=suspect_id)
-            init_chat = [chat.init_chat for chat in chats]
             suspect_data = SuspectSerializer(suspect).data
-            suspect_data["init_chat"] = init_chat
             logger.info(f"suspect/views.py/SuspectsView - {suspect.id} : {suspect_data}")
             return Response(suspect_data, status=status.HTTP_200_OK)
         except Suspect.DoesNotExist:

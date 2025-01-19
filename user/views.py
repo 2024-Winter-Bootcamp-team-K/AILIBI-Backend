@@ -30,10 +30,10 @@ class UserRegistrationView(APIView):
                 description="User created successfully",
                 examples={
                     "application/json": {
-                        "name": "test0419",
-                        "email": "test0419@example.com",
-                        "passw0rd": "test0419",
-                        "passw0rd_check": "test0419"
+                        "name": "test",
+                        "email": "test@example.com",
+                        "passw0rd": "test",
+                        "passw0rd_check": "test"
                     }
                 }
             ),
@@ -41,10 +41,10 @@ class UserRegistrationView(APIView):
                 description="Invalid input data",
                 examples={
                     "application/json": {
-                        "name": "test4019",
-                        "email": "test4019@example.com",
-                        "passw0rd": "test4019",
-                        "passw0rd_check": "test4019"
+                        "name": "test",
+                        "email": "test@example.com",
+                        "passw0rd": "test",
+                        "passw0rd_check": "test"
                     }
                 }
             )

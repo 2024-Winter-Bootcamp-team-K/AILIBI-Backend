@@ -4,4 +4,4 @@ from .models import Suspect
 class SuspectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Suspect
-        fields = ('name', 'gender', 'age', 'job', 'image')
+        fields = ('name', 'gender', 'age', 'job', 'image', 'init_chat')
