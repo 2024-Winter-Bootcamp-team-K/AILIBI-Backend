@@ -11,6 +11,7 @@ on:
 
 jobs:
   test:
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -51,9 +52,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 코드 체크아웃
+      # 1. dveleop 브렌치 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: develop
 
       # 2. Blue 환경 배포
       - name: Deploy Blue Environment
@@ -73,6 +76,7 @@ jobs:
           # 2. SSH로 EC2 서버에 접속
           ssh -i /tmp/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd /home/ubuntu/Backend
+            docker compose version
             docker compose -f docker-compose-common.yml -f docker-compose-blue.yml down --volumes --remove-orphans || true
             docker compose -f docker-compose-common.yml -f docker-compose-blue.yml up -d --build
             docker system prune -af
