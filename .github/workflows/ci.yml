@@ -57,7 +57,11 @@ jobs:
         with:
           ref: develop
 
-      # 2. Blue 환경 배포
+       # 2. 최신 코드 가져오기
+      - name: Pull latest changes
+        run: git pull origin develop
+
+      # 3. Blue 환경 배포
       - name: Deploy Blue Environment
         env:
           DB_NAME: ${{ secrets.DB_NAME }}
@@ -84,9 +88,8 @@ jobs:
           # 3. 임시 파일 삭제
           rm -f /tmp/ec2_key.pem
 
-#      # 2. Green 환경 배포 (Green 환경으로 전환 시 사용)
+#      # 3. Green 환경 배포 (Green 환경으로 전환 시 사용)
 #      - name: Deploy Green Environment
-#        if: github.ref == 'refs/heads/release'
 #        env:
 #          DB_NAME: ${{ secrets.DB_NAME }}
 #          DB_USER: ${{ secrets.DB_USER }}
@@ -103,6 +106,7 @@ jobs:
 #          # 2. SSH로 EC2 서버에 접속
 #          ssh -i /tmp/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
 #            cd /home/ubuntu/Backend
+#            docker compose version
 #            docker compose -f docker-compose-common.yml -f docker-compose-green.yml down --volumes --remove-orphans || true
 #            docker compose -f docker-compose-common.yml -f docker-compose-green.yml up -d --build
 #            docker system prune -af
