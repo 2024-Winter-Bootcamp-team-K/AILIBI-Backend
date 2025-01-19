@@ -33,6 +33,7 @@ jobs:
       # 3. Docker Compose 빌드 및 테스트
       - name: Build and Test with Docker
         env:
+          DEBIAN_FRONTEND: noninteractive
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}

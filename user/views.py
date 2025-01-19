@@ -5,8 +5,6 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .serializers import UserSerializer, LoginSerializer
 from .models import User
-
-from asgiref.sync import sync_to_async
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,11 +49,10 @@ class UserRegistrationView(APIView):
             )
         }
     )
-    async def post(self, request):
+    def post(self, request):
         serializer = UserSerializer(data=request.data)
-        is_valid = await sync_to_async(serializer.is_valid)()
-        if is_valid:
-            await sync_to_async(serializer.save)()
+        if serializer.is_valid():
+            serializer.save()
             logger.info(f"user/views.py/UserRegistrationView - User created successfully : {serializer.data['email']}")
             return Response({
                 "name": serializer.validated_data["name"],
@@ -101,12 +98,11 @@ class LoginView(APIView):
             )
         }
     )
-    async def post(self, request):
+    def post(self, request):
         serializer = LoginSerializer(data=request.data)
-        is_valid = await sync_to_async(serializer.is_valid)()
-        if is_valid:
+        if serializer.is_valid():
             email = serializer.validated_data['email']
-            user = await sync_to_async(User.objects.get)(email=email)  # 로그인 성공 시 사용자 정보
+            user = User.objects.get(email=email)  # 로그인 성공 시 사용자 정보
             logger.info(f"user/views.py/LoginView - Login successful : {user.id}")
             return Response({
                 "id": user.id,
