@@ -343,12 +343,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': False,
+    'USE_SESSION_AUTH': True,  # 세션 인증을 활성화
     'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header',
+        'basicAuth': {
+            'type': 'http',
+            'scheme': 'basic',
         }
     },
     'DEFAULT_API_URL': 'https://www.ailibi.click/',

@@ -59,7 +59,7 @@ jobs:
 
        # 2. 최신 코드 가져오기
       - name: Pull latest changes
-        run: git pull origin develop
+        run: git pull
 
       # 3. Blue 환경 배포
       - name: Deploy Blue Environment
