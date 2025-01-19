@@ -33,7 +33,6 @@ class HistoriesView(APIView):
         operation_description="user_id = 모든 플레이 기록 불러오기\n"
                               "scenario_id = 선택한 플레이 기록 불러오기\n"
                               "suspect_id = 선택한 플레이의 용의자와 심문 내용 불러오기",
-        method="GET",
         manual_parameters=[
             openapi.Parameter('user_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                               description="User ID to filter histories"),
@@ -128,7 +127,6 @@ class HistoriesView(APIView):
     @swagger_auto_schema(
         operation_id="선택한 플레이 기록 삭제하기",
         operation_description="{scenario_id}로 시나리오 (논리적)삭제 하기",
-        method="DELETE",
         manual_parameters=[
             openapi.Parameter('scenario_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER, required=True,
                               description="Scenario ID to delete")
@@ -169,7 +167,6 @@ class ScenariosView(APIView):
     @swagger_auto_schema(
         operation_id="시나리오 불러오기",
         operation_description="{scenario_id}로 시나리오 불러오기",
-        method="GET",
         responses={
             200: openapi.Response(
                 description="Scenario details retrieved successfully",
@@ -207,7 +204,6 @@ class ScenariosView(APIView):
         operation_id="추리 노트 작성하기",
         operation_description="{scenario_id}로 추리노트 작성하기\n"
                               "추리노트의 추가된 부분만 전송하지 말고, 추리노트 전문을 전송할 것.",
-        method="PUT",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={

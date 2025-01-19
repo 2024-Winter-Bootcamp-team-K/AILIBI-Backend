@@ -30,7 +30,6 @@ class ChangeSoundView(APIView):
     @swagger_auto_schema(
         operation_id="TTS 작업 생성 및 결과 반환 API",
         operation_description="3개의 고정된 task_id에 따라 voice_id를 설정하고 작업을 생성합니다.",
-        method="POST",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -121,7 +120,6 @@ class GetAudioResultView(APIView):
     @swagger_auto_schema(
         operation_id="TTS 작업 결과 API",
         operation_description="고정된 task_id를 기반으로 작업 상태를 확인하고, 작업 완료 시 결과 파일을 반환합니다.",
-        method="GET",
         manual_parameters=[
             openapi.Parameter(
                 'task_id', openapi.IN_PATH,

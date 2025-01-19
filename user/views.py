@@ -24,7 +24,6 @@ class UserRegistrationView(APIView):
         operation_id="회원가입",
         operation_description="이름와 이메일은 구분된다.\n"
                               "아이디 == 이메일 이다.",
-        method="POST",
         request_body=UserSerializer,
         responses={
             201: openapi.Response(
@@ -74,7 +73,6 @@ class LoginView(APIView):
     @swagger_auto_schema(
         operation_id="로그인",
         operation_description="email과 password가 필요",
-        method = "POST",
         request_body=LoginSerializer,
         responses={
             201: openapi.Response(

@@ -28,7 +28,6 @@ class WebSocketConnectAPIView(APIView):
     @swagger_auto_schema(
         request_body=WebSocketConnectionSerializer,
         operation_id="WebSocket 연결 초기화",
-        method="POST",
         operation_description="WebSocket 연결을 초기화하고 용의자 ID를 등록합니다.",
         responses={
             202: openapi.Response(
@@ -74,7 +73,6 @@ class WebSocketMessageAPIView(APIView):
     @swagger_auto_schema(
         request_body=WebSocketMessageSerializer,
         operation_id="WebSocket 메시지 전송",
-        method="POST",
         operation_description="WebSocket으로 메시지를 전송합니다.",
         responses={
             202: openapi.Response(
@@ -120,7 +118,6 @@ class WebSocketStatusAPIView(APIView):
     @swagger_auto_schema(
         operation_id="WebSocket 상태 확인",
         operation_description="WebSocket 연결 상태를 확인합니다.",
-        method="GET",
         responses={
             200: openapi.Response(
                 description="WebSocket 연결 상태 반환",

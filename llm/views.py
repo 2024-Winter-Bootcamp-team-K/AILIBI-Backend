@@ -100,7 +100,6 @@ class ScenarioAPIView(APIView):
     @swagger_auto_schema(
         operation_id="시나리오 생성하기",
         operation_description="시나리오 생성하기",
-        method="POST",
         manual_parameters=[
             openapi.Parameter('year', openapi.IN_QUERY, description="연도", type=openapi.TYPE_STRING),
             openapi.Parameter('month', openapi.IN_QUERY, description="월", type=openapi.TYPE_STRING),
