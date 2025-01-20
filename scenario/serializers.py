@@ -7,7 +7,7 @@ from evidence.models import Evidence
 class His_ScenarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scenario
-        fields = ['id', 'name', 'location', 'type', 'year', 'month', 'day', 'hour', 'minute', 'image', 'level', 'note', 'is_success']
+        fields = ['id', 'name', 'location', 'type', 'datetime', 'image', 'level', 'note', 'is_success']
 
 class His_SuspectSerializer(serializers.ModelSerializer):
     class Meta:
