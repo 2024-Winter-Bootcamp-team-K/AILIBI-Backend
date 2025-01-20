@@ -5,11 +5,8 @@ import random
 from openai import OpenAI
 from django.http import JsonResponse
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from scenario.models import Scenario
 from evidence.models import Evidence
 from suspect.models import Suspect
@@ -17,7 +14,6 @@ from random import shuffle
 import requests
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from io import BytesIO
 
 import logging
 
@@ -36,7 +32,7 @@ s3_client = boto3.client(
     region_name=settings.AWS_S3_REGION_NAME,
 )
 
-async def get_scenario_image(location, event_type):
+def get_scenario_image(location, event_type):
     # S3 파일 이름 형식: "scenario/{location} {event_type}.png"
     s3_scenario_name = f"scenario/{location}{event_type}.png"
     CLOUDFRONT_URL = "https://d3muz3cxd0m51v.cloudfront.net/"  # CloudFront 도메인
@@ -44,7 +40,7 @@ async def get_scenario_image(location, event_type):
     return s3_scenario_url
 
 
-async def get_suspect_images():
+def get_suspect_images():
     # 여성 이미지 파일 리스트
     female_files = [f"suspect/여성{i}.png" for i in range(1, 5)]
     # 남성 이미지 파일 리스트
@@ -63,7 +59,7 @@ async def get_suspect_images():
 
     return female_image_url, male_image_urls
 
-async def upload_to_s3(file_name, file_data, content_type):
+def upload_to_s3(file_name, file_data, content_type):
     """
     파일을 AWS S3에 업로드하고 URL 반환.
     """
@@ -84,7 +80,7 @@ async def upload_to_s3(file_name, file_data, content_type):
         logger.error(f"Failed to upload to S3: {e}")
         return None
 
-async def truncate_prompt(prompt, max_length=1000):
+def truncate_prompt(prompt, max_length=1000):
     """Truncate the prompt to ensure it does not exceed max_length."""
     if len(prompt) > max_length:
         return prompt[:max_length - 3] + "..."
