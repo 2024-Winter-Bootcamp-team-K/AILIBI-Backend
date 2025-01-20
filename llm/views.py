@@ -102,20 +102,29 @@ class ScenarioAPIView(APIView):
     @swagger_auto_schema(
         operation_id="시나리오 생성하기",
         operation_description="시나리오 생성하기",
-        manual_parameters=[
-            openapi.Parameter('year', openapi.IN_QUERY, description="연도", type=openapi.TYPE_STRING),
-            openapi.Parameter('month', openapi.IN_QUERY, description="월", type=openapi.TYPE_STRING),
-            openapi.Parameter('day', openapi.IN_QUERY, description="일", type=openapi.TYPE_ARRAY,
-                              items=openapi.Items(type=openapi.TYPE_STRING)),  # items 추가
-            openapi.Parameter('hour', openapi.IN_QUERY, description="시", type=openapi.TYPE_ARRAY,
-                              items=openapi.Items(type=openapi.TYPE_STRING)),  # items 추가
-            openapi.Parameter('minute', openapi.IN_QUERY, description="분", type=openapi.TYPE_ARRAY,
-                              items=openapi.Items(type=openapi.TYPE_STRING)),  # items 추가
-            openapi.Parameter('location', openapi.IN_QUERY, description="위치", type=openapi.TYPE_ARRAY,
-                              items=openapi.Items(type=openapi.TYPE_STRING)),  # items 추가
-            openapi.Parameter('event_type', openapi.IN_QUERY, description="이벤트 타입(살인/도난)", type=openapi.TYPE_ARRAY,
-                              items=openapi.Items(type=openapi.TYPE_STRING)),  # items 추가
-        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'year': openapi.Schema(type=openapi.TYPE_STRING, description="연도"),
+                'month': openapi.Schema(type=openapi.TYPE_STRING, description="월"),
+                'day': openapi.Schema(type=openapi.TYPE_ARRAY,
+                                      items=openapi.Items(type=openapi.TYPE_STRING),
+                                      description="일"),
+                'hour': openapi.Schema(type=openapi.TYPE_ARRAY,
+                                       items=openapi.Items(type=openapi.TYPE_STRING),
+                                       description="시"),
+                'minute': openapi.Schema(type=openapi.TYPE_ARRAY,
+                                         items=openapi.Items(type=openapi.TYPE_STRING),
+                                         description="분"),
+                'location': openapi.Schema(type=openapi.TYPE_ARRAY,
+                                           items=openapi.Items(type=openapi.TYPE_STRING),
+                                           description="위치"),
+                'event_type': openapi.Schema(type=openapi.TYPE_ARRAY,
+                                             items=openapi.Items(type=openapi.TYPE_STRING),
+                                             description="이벤트 타입(살인/도난)")
+            },
+            required=['year', 'month', 'day', 'hour', 'minute', 'location', 'event_type'],  # 필수 값 설정
+        ),
         responses={
             201: openapi.Response('시나리오 생성 성공', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
             400: openapi.Response(description="user_id 오류"),

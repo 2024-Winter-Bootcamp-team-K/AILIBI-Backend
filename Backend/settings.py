@@ -66,7 +66,7 @@ AWS_QUERYSTRING_AUTH = False  # URL에서 인증 문자열 제외 (퍼블릭 액
 AWS_DEFAULT_ACL = None
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1']
 
@@ -150,7 +150,7 @@ ASGI_APPLICATION = "Backend.asgi.application"
 WSGI_APPLICATION = 'Backend.wsgi.application'
 
 # Redis 호스트 이름 설정
-REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')  # 기본값: redis
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis')  # 기본값: redis
 
 # Channels 설정
 CHANNEL_LAYERS = {
