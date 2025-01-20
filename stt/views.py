@@ -10,6 +10,75 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
+@swagger_auto_schema(
+    method='post',
+    operation_id="STT 처리",
+    operation_description="BASE64로 인코딩된 오디오 데이터를 받아 네이버 클로바 STT API를 호출하여 텍스트 변환 결과를 반환합니다.",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'audio': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="BASE64로 인코딩된 오디오 데이터"
+            ),
+        },
+        required=['audio'],  # 필수 필드
+    ),
+    responses={
+        200: openapi.Response(
+            description="STT 변환 성공",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'text': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="STT 변환 결과 텍스트"
+                    ),
+                },
+            ),
+        ),
+        400: openapi.Response(
+            description="잘못된 요청",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="에러 메시지"
+                    ),
+                },
+            ),
+        ),
+        405: openapi.Response(
+            description="허용되지 않은 HTTP 메서드",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="에러 메시지"
+                    ),
+                },
+            ),
+        ),
+        500: openapi.Response(
+            description="서버 내부 오류",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="예외 메시지"
+                    ),
+                },
+            ),
+        ),
+    },
+)
+
 @csrf_exempt  # 이 함수에서는 CSRF 검사를 생략
 def stt_process(request):
 
