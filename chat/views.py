@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django.conf import settings
 import redis
 from .Serializers import WebSocketMessageSerializer, WebSocketConnectionSerializer
 
@@ -48,7 +49,7 @@ class WebSocketConnectAPIView(APIView):
             suspect_id = serializer.validated_data['suspect_id']
 
             # Redis에 연결 상태 저장 (예제)
-            redis_conn = redis.Redis(host='localhost', port=6379, db=0)
+            redis_conn = redis.Redis(host=settings.REDIS_HOST, port=6379, db=0)
             redis_conn.set(f"websocket:suspect:{suspect_id}", "connected")
 
             return Response(
@@ -93,7 +94,7 @@ class WebSocketMessageAPIView(APIView):
             message = serializer.validated_data['message']
 
             # 메시지 처리 로직 (예제: Redis에 저장)
-            redis_conn = redis.Redis(host='localhost', port=6379, db=0)
+            redis_conn = redis.Redis(host=settings.REDIS_HOST, port=6379, db=0)
             redis_conn.rpush("websocket:messages", message)
 
             return Response(
@@ -132,7 +133,7 @@ class WebSocketStatusAPIView(APIView):
     )
     def get(self, request):
         # Redis에서 연결 상태 확인 (예제)
-        redis_conn = redis.Redis(host='localhost', port=6379, db=0)
+        redis_conn = redis.Redis(host=settings.REDIS_HOST, port=6379, db=0)
         suspect_ids = redis_conn.keys("websocket:suspect:*")
         status_list = [
             {
