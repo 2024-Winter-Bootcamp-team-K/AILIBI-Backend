@@ -76,6 +76,7 @@ class STTProcessAPIView(APIView):
         try:
             # 요청 본문에서 JSON 데이터 파싱
             data = request.data
+            logger.info(f"Received request data: {data}")
             base64_audio_data = data.get('audio')
 
             if not base64_audio_data:
@@ -83,10 +84,17 @@ class STTProcessAPIView(APIView):
                 return JsonResponse({'error': 'No audio data provided'}, status=400)
 
             # BASE64 데이터를 디코딩하여 임시 파일로 저장
-            audio_data = base64.b64decode(base64_audio_data)
+            try:
+                audio_data = base64.b64decode(base64_audio_data, validate=True)
+            except base64.binascii.Error as e:
+                logger.error(f"Invalid BASE64 data: {e}")
+                return JsonResponse({'error': 'Invalid BASE64 data'}, status=400)
+
             audio_file_path = '/tmp/input_audio.wav'
             with open(audio_file_path, 'wb') as f:
                 f.write(audio_data)
+
+            logger.info(f"Audio file saved to {audio_file_path}")
 
             # 네이버 클로바 STT API 호출
             url = "https://naveropenapi.apigw.ntruss.com/recog/v1/stt?lang=Kor"
@@ -96,8 +104,13 @@ class STTProcessAPIView(APIView):
                 "X-NCP-APIGW-API-KEY": settings.NAVER_CLIENT_SECRET,
             }
 
+            logger.info(f"Sending request to Naver STT API: {url}")
+
             with open(audio_file_path, 'rb') as f:
                 response = requests.post(url, headers=headers, data=f)
+
+            logger.info(f"Response status code: {response.status_code}")
+            logger.debug(f"Response content: {response.text}")
 
             if response.status_code == 200:
                 result = response.json()
@@ -108,13 +121,9 @@ class STTProcessAPIView(APIView):
                 logger.error(f"Error from STT API: {response.text}")
                 return JsonResponse({'error': response.text}, status=response.status_code)
 
-        except json.JSONDecodeError:
-            logger.error("Invalid JSON data")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON data: {e}")
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
-
-        except base64.binascii.Error:
-            logger.error("Invalid BASE64 data")
-            return JsonResponse({'error': 'Invalid BASE64 data'}, status=400)
 
         except Exception as e:
             logger.exception(f"Unexpected error: {e}")
@@ -124,74 +133,4 @@ class STTProcessAPIView(APIView):
             # 임시 파일 삭제
             if audio_file_path and os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
-
-
-@csrf_exempt  # 이 함수에서는 CSRF 검사를 생략
-def stt_process(request):
-    """
-    프론트엔드에서 BASE64로 인코딩된 오디오 데이터를 받아 네이버 클로바 STT API를 호출하여 텍스트를 반환하는 뷰 함수.
-    주요 처리 단계:
-    1. POST 요청에서 BASE64 데이터를 추출합니다.
-    2. BASE64 데이터를 디코딩하여 로컬 임시 파일로 저장합니다.
-    3. 네이버 클로바 STT API를 호출하여 텍스트 변환 결과를 받아옵니다.
-    4. 결과를 JSON 형태로 반환합니다.
-    """
-    # 1. 요청이 POST인지 확인
-    if request.method == 'POST':
-        try:
-            # 1-1. 요청 본문에서 JSON 데이터를 파싱
-            data = json.loads(request.body)
-
-            # 1-2. BASE64로 인코딩된 오디오 데이터 가져오기
-            base64_audio_data = data.get('audio')
-
-            if not base64_audio_data:
-                # 오디오 데이터가 없으면 에러 메시지 반환
-                logger.error("No audio data provided")
-                return JsonResponse({'error': 'No audio data provided'}, status=400)
-
-            # 2. BASE64 데이터를 디코딩하여 임시 오디오 파일로 저장
-            audio_data = base64.b64decode(base64_audio_data)
-            audio_file_path = '/tmp/input_audio.wav'
-            with open(audio_file_path, 'wb') as f:
-                f.write(audio_data)
-
-            # 3. 네이버 클로바 STT API 호출
-            url = "https://naveropenapi.apigw.ntruss.com/recog/v1/stt?lang=Kor"
-            headers = {
-                "Content-Type": "application/octet-stream",
-                "X-NCP-APIGW-API-KEY-ID": settings.NAVER_CLIENT_ID,
-                "X-NCP-APIGW-API-KEY": settings.NAVER_CLIENT_SECRET,
-            }
-
-            with open(audio_file_path, 'rb') as f:
-                response = requests.post(url, headers=headers, data=f)
-
-            if response.status_code == 200:
-                result = response.json()
-                text = result.get('text', '')
-                logger.info(f"STT result: {text}")
-                return JsonResponse({'text': text}, json_dumps_params={'ensure_ascii': False})
-            else:
-                logger.error(f"Error from STT API: {response.text}")
-                return JsonResponse({'error': response.text}, status=response.status_code)
-
-        except json.JSONDecodeError:
-            logger.error("Invalid JSON data")
-            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
-
-        except base64.binascii.Error:
-            logger.error("Invalid BASE64 data")
-            return JsonResponse({'error': 'Invalid BASE64 data'}, status=400)
-
-        except Exception as e:
-            logger.exception(f"Unexpected error: {e}")
-            return JsonResponse({'error': str(e)}, status=500)
-
-        finally:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
-
-    # 8. POST 요청이 아닌 경우 처리
-    logger.error("Invalid request method")
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
+                logger.info(f"Temporary audio file {audio_file_path} deleted")
