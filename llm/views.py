@@ -132,7 +132,7 @@ class ScenarioAPIView(APIView):
             502: openapi.Response(description="입력 값이 잘 못 되었거나 HTTP method가 잘 못되었습니다.")
         }
     )
-    def post(self, request):
+    async def post(self, request):
         #디버그 옵션
         debug = False
 
@@ -185,8 +185,8 @@ class ScenarioAPIView(APIView):
 
                 scenario_input = truncate_prompt(scenario_input)
 
-                scenario_image_url = get_scenario_image(location, event_type)
-                female_image_url, male_image_urls = get_suspect_images()
+                scenario_image_url = await get_scenario_image(location, event_type)
+                female_image_url, male_image_urls = await get_suspect_images()
 
                 # GPT-4 시나리오 생성
                 gpt_response = client.chat.completions.create(
@@ -325,7 +325,7 @@ class ScenarioAPIView(APIView):
                     image_data = requests.get(generate_image_url).content
 
                     # S3에 이미지 업로드
-                    uploaded_image_url = upload_to_s3(f"evidence_{i + 1}.png", image_data, "image/png")
+                    uploaded_image_url = await upload_to_s3(f"user_{user_id}_scenario_{scenario.id}_evidence_{i + 1}.png", image_data, "image/png")
 
                     evidence_image_url = uploaded_image_url if uploaded_image_url else "test.jpg"
 

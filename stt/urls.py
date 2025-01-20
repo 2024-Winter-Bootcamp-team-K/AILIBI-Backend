@@ -1,6 +1,6 @@
 from django.urls import path
-from . import views
+from .views import STTProcessAPIView
 
 urlpatterns = [
-    path('', views.stt_process, name="stt_process"),
+    path('', STTProcessAPIView.as_view(), name="stt_process"),  # APIView 등록
 ]
