@@ -71,6 +71,8 @@ class STTProcessAPIView(APIView):
         """
         POST 요청을 처리하여 STT 변환 결과를 반환합니다.
         """
+        audio_file_path = None  # Ensure it's defined
+
         try:
             # 요청 본문에서 JSON 데이터 파싱
             data = request.data
@@ -120,8 +122,9 @@ class STTProcessAPIView(APIView):
 
         finally:
             # 임시 파일 삭제
-            if os.path.exists(audio_file_path):
+            if audio_file_path and os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
+
 
 @csrf_exempt  # 이 함수에서는 CSRF 검사를 생략
 def stt_process(request):
