@@ -65,13 +65,11 @@ AWS_QUERYSTRING_AUTH = False  # URL에서 인증 문자열 제외 (퍼블릭 액
 # Optional: Pre-signed URL을 사용하려면 설정
 AWS_DEFAULT_ACL = None
 
-SLACK_API_URL = secret_data.get('SLACK_API_URL', os.getenv('SLACK_API_URL', 'your-slack-webhook-url'))
-
 # SECURITY WARNING: don't run with debug turned on in production!
 # 일단 True로 유지
 DEBUG = True
 
-ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1',]
+ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1']
 
 # Application definition
 
