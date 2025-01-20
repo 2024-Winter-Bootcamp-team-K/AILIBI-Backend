@@ -173,6 +173,8 @@ cython_debug/
 logs/
 logs.django.log
 
+# Protect IP Address
 nginx.conf
+
 
 secrets.json
