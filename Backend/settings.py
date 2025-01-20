@@ -66,7 +66,7 @@ AWS_QUERYSTRING_AUTH = False  # URL에서 인증 문자열 제외 (퍼블릭 액
 AWS_DEFAULT_ACL = None
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1']
 
