@@ -44,3 +44,7 @@ scrape_configs:
   - job_name: 'nginx_exporter' #정하고 싶은 이름
     static_configs:
       - targets: [ 'nginx_exporter:9113' ] #<서비스_이름>:<포트>
+
+  - job_name: 'postgres_exporte'
+    static_configs:
+      - targets: ['postgres_exporter:9187']

@@ -108,7 +108,7 @@ services:
             - /var/run:/var/run:rw #읽기 & 쓰기 - 런타임 데이터
             - /sys:/sys:ro #읽기 전용 데이터 - 커널, 하드웨어, 드라이버 정보 등등
             - /var/lib/docker/:/var/lib/docker:ro #읽기 전용 데이터 - 도커 정보 데이터
-            - /dev/disk/:/dev/disk:ro
+            - /var/run/docker.sock:/var/run/docker.sock:ro
         restart: always
         networks:
             - app_network
@@ -140,6 +140,20 @@ services:
             - nginx
         networks:
             - app_network
+
+
+    postgres_exporter:
+        image: quay.io/prometheuscommunity/postgres-exporter:latest
+        container_name: postgres_exporter
+        restart: always
+        environment:
+            DATA_SOURCE_NAME: "postgresql://${DB_USER}:${DB_PASSWORD}@postgresql:5432/${DB_NAME}?sslmode=disable"
+        ports:
+            - "9187:9187"
+        networks:
+            - app_network
+        depends_on:
+            - postgresql
 
 
 #    alertmanager: #slack에 알림
