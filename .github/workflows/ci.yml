@@ -11,7 +11,7 @@ on:
 
 jobs:
   test:
-    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -65,7 +65,7 @@ jobs:
 
        # 2. 최신 코드 가져오기
       - name: Pull latest changes
-        run: git pull
+        run: git pull origin develop
 
       # 3. Blue 환경 배포
       - name: Deploy Blue Environment

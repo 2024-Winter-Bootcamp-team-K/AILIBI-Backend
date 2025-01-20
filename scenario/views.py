@@ -32,7 +32,8 @@ class HistoriesView(APIView):
         operation_id="모든 플레이 기록 불러오기/선택한 플레이 기록 불러오기/선택한 플레이의 용의자와 심문 내용 불러오기",
         operation_description="user_id = 모든 플레이 기록 불러오기\n"
                               "scenario_id = 선택한 플레이 기록 불러오기\n"
-                              "suspect_id = 선택한 플레이의 용의자와 심문 내용 불러오기",
+                              "suspect_id = 선택한 플레이의 용의자와 심문 내용 불러오기\n"
+                              "evidence_id = 선택한 플레이의 증거 불러오기",
         manual_parameters=[
             openapi.Parameter('user_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                               description="User ID to filter histories"),
@@ -40,20 +41,22 @@ class HistoriesView(APIView):
                               description="Scenario ID to filter histories"),
             openapi.Parameter('suspect_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                               description="Suspect ID to filter chat histories"),
+            openapi.Parameter('evidence_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description="Evidence ID to filter histories"),
         ],
         responses={
             200: openapi.Response(
                 description="Successfully retrieved histories",
             ),
-            404: openapi.Response(description="Scenario or suspect not found"),
+            404: openapi.Response(description="Scenario, suspect, or evidence not found"),
             400: openapi.Response(description="Invalid request parameters")
         }
     )
-
     def get(self, request):
-        user_id = request.query_params.get('user_id')           #모든 플레이 기록 불러오기
-        scenario_id = request.query_params.get('scenario_id')   #선택한 플레이 기록 불러오기
-        suspect_id = request.query_params.get('suspect_id')     # 선택한 용의자와 심문 내용 불러오기
+        user_id = request.query_params.get('user_id')
+        scenario_id = request.query_params.get('scenario_id')
+        suspect_id = request.query_params.get('suspect_id')
+        evidence_id = request.query_params.get('evidence_id')
 
         if user_id:
             user = get_object_or_404(User, id=user_id)
@@ -63,49 +66,32 @@ class HistoriesView(APIView):
             return Response({"scenarios": serializer.data}, status=status.HTTP_200_OK)
 
         elif scenario_id:
-
-            # Scenario 정보 가져오기
             scenario = Scenario.objects.filter(id=scenario_id).first()
-
             if not scenario:
                 logger.error(f"scenario/views.py/HistoriesView - error: Scenario not found")
                 return Response({"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND)
 
-            # Suspects 정보 가져오기
             suspects = Suspect.objects.filter(scenario_id=scenario_id)
-
-            # Evidence 정보 가져오기
             evidences = Evidence.objects.filter(scenario_id=scenario_id)
 
-
-
-            # Scenario, Suspects, Evidence 직렬화
             scenario_data = His_ScenarioSerializer(scenario).data
             suspects_data = His_SuspectSerializer(suspects, many=True).data
             evidence_data = EvidenceSerializer(evidences, many=True).data
 
-            # 최종 응답 데이터 구성
             response_data = {
                 "scenarios": scenario_data,
                 "suspects": suspects_data,
                 "evidences": evidence_data
             }
 
-            logger.info(f"user/views.py/HistoriesView - resopnce_ok: {response_data}")
+            logger.info(f"user/views.py/HistoriesView - response_ok: {response_data}")
             return Response(response_data, status=status.HTTP_200_OK)
 
         elif suspect_id:
             chat = get_object_or_404(Chat, suspect_id=suspect_id)
+            user_chat_messages = [msg for msg in chat.user_chat.split('/CHANGE ') if msg]
+            suspect_chat_messages = [msg for msg in chat.suspect_chat.split('/CHANGE ') if msg]
 
-            # Split messages by "/CHANGE "
-            user_chat_messages = chat.user_chat.split('/CHANGE ')
-            suspect_chat_messages = chat.suspect_chat.split('/CHANGE ')
-
-            # Remove empty strings in case "/CHANGE " is at the start or end
-            user_chat_messages = [msg for msg in user_chat_messages if msg]
-            suspect_chat_messages = [msg for msg in suspect_chat_messages if msg]
-
-            # Structure the response as specified
             response_data = {
                 "user_chat": [
                     {"message": user_chat_messages}
@@ -115,14 +101,34 @@ class HistoriesView(APIView):
                 ]
             }
 
-            logger.info(f"user/views.py/HistoriesView - resopnce_ok: {response_data}")
+            logger.info(f"user/views.py/HistoriesView - response_ok: {response_data}")
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        elif evidence_id:
+            evidences = Evidence.objects.filter(id=evidence_id)
+            if not evidences.exists():
+                logger.error(f"scenario/views.py/HistoriesView - error: Evidence not found")
+                return Response({"error": "Evidence not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            evidence_data = [
+                {
+                    "id": evidence.id,
+                    "name": evidence.name,
+                    "description": evidence.description,
+                    "image": evidence.image
+                } for evidence in evidences
+            ]
+
+            response_data = {
+                "evidences": evidence_data
+            }
+
+            logger.info(f"scenario/views.py/HistoriesView - response_ok: {response_data}")
             return Response(response_data, status=status.HTTP_200_OK)
 
         else:
             logger.error(f"scenario/views.py/HistoriesView - error: 잘못된 요청")
             return Response({'error': '잘못된 요청'}, status=status.HTTP_400_BAD_REQUEST)
-
-
 
     @swagger_auto_schema(
         operation_id="선택한 플레이 기록 삭제하기",
