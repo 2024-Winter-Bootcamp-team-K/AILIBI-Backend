@@ -1,0 +1,46 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+#alerting:
+#  alertmanagers:
+#    - static_configs:
+#        - targets: ['alertmanager:9093']
+
+
+#rule_files:
+#  - /etc/prometheus/alert-rules.yml
+
+scrape_configs:
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: [ 'prometheus:9090' ]
+
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: [ 'node_exporter:9100' ]
+
+  - job_name: 'blue-backend'
+    static_configs:
+      - targets: [ 'blue-backend:8000' ]
+
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: [ 'rabbitmq:15692' ]
+
+  - job_name: 'redis'
+
+    static_configs:
+      - targets: ['redis_exporter:9121']
+
+  - job_name: 'blue-celery'
+    static_configs:
+      - targets: [ 'blue-celery:5555' ]
+
+  - job_name: 'nginx_exporter' #정하고 싶은 이름
+    static_configs:
+      - targets: [ 'nginx_exporter:9113' ] #<서비스_이름>:<포트>
