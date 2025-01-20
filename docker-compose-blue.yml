@@ -26,15 +26,34 @@ services:
         networks:
             - app_network
 
+    redis_exporter:
+        image: oliver006/redis_exporter:latest
+        container_name: redis_exporter
+        environment:
+            - REDIS_ADDR=redis:6379 # 레디스 주소. 여기로 데이터를 받아옵니다. <host_ip>:<port>
+        ports:
+            - "9121:9121"
+        networks:
+            - app_network
+
+
     blue-celery:
-        build: .
-        command: celery -A Backend worker --loglevel=info
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+            -   .:/backend
+        command: sh -c "sh start_celery_flower.sh"
         container_name: blue-celery
+        ports:
+            - '5555:5555' #5555 포트 매핑
         depends_on:
             - rabbitmq
             - postgresql
             - redis
         environment:
+            CELERY_BROKER_API_URL: http://guest:guest@rabbitmq:15672/api/ # celery api url. 이거 설정 해야지 셀러리 broker부분이 보입니다
+            CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672/ # 브로커 url
             DB_NAME: "${DB_NAME}"
             DB_USER: "${DB_USER}"
             DB_PASSWORD: "${DB_PASSWORD}"
@@ -42,8 +61,113 @@ services:
             DB_PORT: "5432"
             REDIS_HOST: "redis"
             REDIS_PORT: "6379"
+        restart: always
         networks:
             - app_network
+
+
+    prometheus:
+        image: prom/prometheus:v2.45.6
+        container_name: prometheus
+        ports:
+            - "9090:9090"
+        volumes:
+            - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+            - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml #슬렉 알람
+        command:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+        networks:
+            - app_network
+        depends_on:
+            - blue-backend
+
+    grafana:
+        image: grafana/grafana:9.5.20
+        container_name: grafana
+        volumes:
+            - ./grafana:/etc/grafana/provisioning #그라파나 설정(config) 볼륨.
+            - ./grafana/data:/var/lib/grafana #그라파나 대시보드 데이터.
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+            - GF_SERVER_HTTP_PORT=4000
+        ports:
+            - "4000:4000"
+        networks:
+            - app_network
+        depends_on:
+            - prometheus
+
+    cadvisor:
+        image: gcr.io/cadvisor/cadvisor:v0.49.1
+        container_name: cadvisor
+        ports:
+            - "8080:8080"
+        volumes:
+            - /:/rootfs:ro #읽기 전용 데이터 - 루트 파일 시스템
+            - /var/run:/var/run:rw #읽기 & 쓰기 - 런타임 데이터
+            - /sys:/sys:ro #읽기 전용 데이터 - 커널, 하드웨어, 드라이버 정보 등등
+            - /var/lib/docker/:/var/lib/docker:ro #읽기 전용 데이터 - 도커 정보 데이터
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        restart: always
+        networks:
+            - app_network
+
+
+    node_exporter:
+        image: quay.io/prometheus/node-exporter:v1.8.1
+        container_name: node_exporter
+        ports:
+            - "9100:9100"
+        restart: unless-stopped
+        volumes:
+            - '/proc:/host/proc:ro'
+            - '/sys:/host/sys:ro'
+            - '/:/host:ro'
+        command:
+            - '--path.rootfs=/host'
+        networks:
+            - app_network
+
+
+    nginx_exporter:
+        image: nginx/nginx-prometheus-exporter:latest
+        container_name: nginx_exporter
+        ports:
+            - "9113:9113"
+        command: --nginx.scrape-uri=http://nginx-example:80/stub_status # 엔진엑스 /stub_status에서 데이터를 가지고 오라는 설정.
+        depends_on:
+            - nginx
+        networks:
+            - app_network
+
+
+    postgres_exporter:
+        image: quay.io/prometheuscommunity/postgres-exporter:latest
+        container_name: postgres_exporter
+        restart: always
+        environment:
+            DATA_SOURCE_NAME: "postgresql://${DB_USER}:${DB_PASSWORD}@postgresql:5432/${DB_NAME}?sslmode=disable"
+        ports:
+            - "9187:9187"
+        networks:
+            - app_network
+        depends_on:
+            - postgresql
+
+
+#    alertmanager: #slack에 알림
+#        image: prom/alertmanager:main
+#        container_name: alertmanager
+#        ports:
+#            - "9093:9093" #포트 9093 매핑
+#        volumes:
+#            - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml #설정파일 볼륨 추가
+#            - ./alertmanager/tmp:/data/ #데이터 담기 전용
+#        networks:
+#            - app_network #같은 네트워크
+#        command: --config.file=/etc/alertmanager/alertmanager.yml --log.level=debug #설정파일 설정
+
 
 networks:
   app_network:

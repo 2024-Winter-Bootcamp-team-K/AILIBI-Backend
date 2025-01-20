@@ -7,6 +7,7 @@ WORKDIR /backend
 #소스 코드 복사
 COPY . /backend
 
+
 # 시스템 패키지 업데이트 및 필수 패키지 설치
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -19,6 +20,9 @@ RUN apt-get update && apt-get install -y \
 #의존성 파일 복사 및 설치(캐시 삭제)
 COPY requirements.txt /backend/
 RUN pip install --no-cache-dir -r requirements.txt
+
+COPY start_celery_flower.sh /backend/
+RUN chmod +x start_celery_flower.sh
 
 # Dockerfile
 RUN python manage.py collectstatic --noinput
