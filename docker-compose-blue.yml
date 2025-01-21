@@ -169,8 +169,6 @@ services:
 #        command: --config.file=/etc/alertmanager/alertmanager.yml --log.level=debug #설정파일 설정
 
 
-volumes:
-  grafana_data:
 
 networks:
   app_network:

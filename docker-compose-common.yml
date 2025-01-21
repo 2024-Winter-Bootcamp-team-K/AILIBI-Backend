@@ -78,6 +78,7 @@ services:
 
 
 volumes:
+  grafana_data:
   postgres_data:
 
 
