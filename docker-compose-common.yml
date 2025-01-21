@@ -49,8 +49,30 @@ services:
             - "443:443"
         networks:
             - app_network
+        labels:
+            logging: "promtail" #라벨링
+            logging_jobname: "containerlogs" #그라파나에서 사용될 로그 job 이름 태그.
         depends_on:
             - blue-backend
+
+    loki:
+        image: grafana/loki:2.0.0
+        container_name: loki
+        ports:
+            - "3100:3100"
+        command: -config.file=/etc/loki/config.yml
+
+    promtail:
+        image: grafana/promtail:latest
+        container_name: promtail
+        volumes:
+            - ./promtail/config.yaml:/etc/promtail/docker-config.yaml
+            - /var/lib/docker/containers:/var/lib/docker/containers:ro #도커 로그
+            - /var/run/docker.sock:/var/run/docker.sock #도커 소켓 (디몬)
+        command:
+            - -config.file=/etc/promtail/docker-config.yaml #설정파일
+        depends_on:
+            - loki
 
 
 volumes:
