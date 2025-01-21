@@ -173,9 +173,8 @@ cython_debug/
 logs/
 logs.django.log
 
-# Protect IP Address
-nginx.conf
-
 alertmanager/alertmanager.yml
 
 secrets.json
+
+grafana
