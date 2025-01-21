@@ -37,8 +37,7 @@ def get_scenario_image(location, event_type):
     # S3 파일 이름 형식: "scenario/{location} {event_type}.png"
     s3_scenario_name = f"scenario/{location}{event_type}.png"
     s3_scenario_name_encoded = quote(s3_scenario_name)
-    CLOUDFRONT_URL = "https://d3muz3cxd0m51v.cloudfront.net/"  # CloudFront 도메인
-    s3_scenario_url = f"{CLOUDFRONT_URL}/{s3_scenario_name_encoded}"
+    s3_scenario_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{s3_scenario_name_encoded}"
     return s3_scenario_url
 
 
@@ -53,10 +52,9 @@ def get_suspect_images():
     male_images = random.sample(male_files, 2)  # 두 명의 남성 선택, 중복 방지
 
     # S3 URL 생성
-    CLOUDFRONT_URL = "https://d3muz3cxd0m51v.cloudfront.net/"  # CloudFront 도메인
-    female_image_url = f"{CLOUDFRONT_URL}/{quote(female_image)}"  # URL 인코딩
+    female_image_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{quote(female_image)}"  # URL 인코딩
     male_image_urls = [
-        f"{CLOUDFRONT_URL}/{quote(male_image)}" for male_image in male_images  # URL 인코딩
+        f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{quote(male_image)}" for male_image in male_images  # URL 인코딩
     ]
 
     return female_image_url, male_image_urls
@@ -75,8 +73,7 @@ def upload_to_s3(file_name, file_data, content_type):
             Body=file_data,
             ContentType=content_type,
         )
-        CLOUDFRONT_URL = "https://d3muz3cxd0m51v.cloudfront.net/"  # CloudFront 도메인
-        s3_evidence_url = f"{CLOUDFRONT_URL}/{quote(s3_key)}"
+        s3_evidence_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{quote(s3_key)}"
         return s3_evidence_url
     except Exception as e:
         logger.error(f"Failed to upload to S3: {e}")
