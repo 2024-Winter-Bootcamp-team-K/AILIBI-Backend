@@ -138,7 +138,8 @@ class MyConsumer(AsyncWebsocketConsumer):
 
             # 클라이언트로 GPT 응답 전송
             await self.send(json.dumps({
-                "message": gpt_response
+                "user_chat": user_message,
+                "suspect_chat": gpt_response
             }, ensure_ascii=False))
 
             logger.info(f"GPT response sent: {gpt_response}")
@@ -288,8 +289,6 @@ class MyConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"Error generating GPT response: {str(e)}", exc_info=True)
             return "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다."
-
-
 
     @sync_to_async
     def save_chat_message(self, user_message, gpt_response):
