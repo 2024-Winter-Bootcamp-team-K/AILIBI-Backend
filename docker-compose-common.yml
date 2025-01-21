@@ -1,6 +1,6 @@
 services:
     postgresql:
-        image: postgres:latest
+        image: postgres:16.3
         restart: always
         container_name: postgresql
         ports:
