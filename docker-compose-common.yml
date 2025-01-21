@@ -61,6 +61,8 @@ services:
         ports:
             - "3100:3100"
         command: -config.file=/etc/loki/config.yml
+        networks:
+            - app_network
 
     promtail:
         image: grafana/promtail:latest
@@ -76,8 +78,9 @@ services:
 
 
 volumes:
+  grafana_data:
   postgres_data:
-  grafana-data:
+
 
 networks:
   app_network:

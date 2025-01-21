@@ -69,7 +69,7 @@ AWS_DEFAULT_ACL = None
 # 일단 True로 유지
 DEBUG = True
 
-ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1', 'blue-backend', 'green-backend']
 
 # Application definition
 

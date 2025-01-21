@@ -86,13 +86,14 @@ services:
         container_name: grafana
         volumes:
             - ./grafana:/etc/grafana/provisioning #그라파나 설정(config) 볼륨.
-            - ./grafana/data:/var/lib/grafana #그라파나 대시보드 데이터.
+            - ./grafana/data:/var/lib/grafana #그라파나 대시보드 데이터. 이걸 설정 해둬야지 가상 볼륨을 날리셔도 대시보드들이 남아있습니다.
         environment:
             - GF_SECURITY_ADMIN_USER=admin
             - GF_SECURITY_ADMIN_PASSWORD=admin
             - GF_SERVER_HTTP_PORT=4000
         ports:
             - "4000:4000"
+        user: "472:472"
         networks:
             - app_network
         depends_on:
@@ -135,7 +136,7 @@ services:
         container_name: nginx_exporter
         ports:
             - "9113:9113"
-        command: --nginx.scrape-uri=http://nginx-example:80/stub_status # 엔진엑스 /stub_status에서 데이터를 가지고 오라는 설정.
+        command: --nginx.scrape-uri=http://nginx:80/stub_status # 엔진엑스 /stub_status에서 데이터를 가지고 오라는 설정.
         depends_on:
             - nginx
         networks:
@@ -167,6 +168,7 @@ services:
 #        networks:
 #            - app_network #같은 네트워크
 #        command: --config.file=/etc/alertmanager/alertmanager.yml --log.level=debug #설정파일 설정
+
 
 
 networks:
