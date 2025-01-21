@@ -114,7 +114,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://ailibi.click",       # 메인 도메인
     "https://www.ailibi.click",  # www 서브도메인
     "http://localhost:3000",     # 개발 환경의 프론트엔드
-    "https://d3muz3cxd0m51v.cloudfront.net",  # CloudFront 도메인
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # 쿠키 및 인증 정보를 포함한 요청 허용
@@ -194,7 +193,6 @@ CSRF_TRUSTED_ORIGINS = [
     'https://www.ailibi.click',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
-    "https://d3muz3cxd0m51v.cloudfront.net",  # CloudFront 도메인
 ]
 
 # Database
