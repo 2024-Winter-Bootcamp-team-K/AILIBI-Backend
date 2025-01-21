@@ -91,6 +91,7 @@ services:
             - GF_SECURITY_ADMIN_USER=admin
             - GF_SECURITY_ADMIN_PASSWORD=admin
             - GF_SERVER_HTTP_PORT=4000
+            - GF_SERVER_ROOT_URL= ${GF_SERVER_ROOT_URL}
         ports:
             - "4000:4000"
         user: "472:472"
@@ -169,7 +170,8 @@ services:
 #            - app_network #같은 네트워크
 #        command: --config.file=/etc/alertmanager/alertmanager.yml --log.level=debug #설정파일 설정
 
-
+volumes:
+  grafana_data:
 
 networks:
   app_network:

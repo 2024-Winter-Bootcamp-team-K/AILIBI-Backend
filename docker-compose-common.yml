@@ -41,12 +41,12 @@ services:
     nginx:
         image: nginx:latest
         container_name: nginx
-        volumes:
-            - ./nginx.conf:/etc/nginx/nginx.conf
-            - /etc/letsencrypt:/etc/letsencrypt
         ports:
             - "80:80"
             - "443:443"
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf
+            - /etc/letsencrypt:/etc/letsencrypt
         networks:
             - app_network
         labels:
@@ -56,11 +56,10 @@ services:
             - blue-backend
 
     loki:
-        image: grafana/loki:2.0.0
-        container_name: loki
+        image: grafana/loki:latest
         ports:
             - "3100:3100"
-        command: -config.file=/etc/loki/config.yml
+        command: -config.file=/etc/loki/local-config.yaml
         networks:
             - app_network
 
@@ -75,6 +74,8 @@ services:
             - -config.file=/etc/promtail/docker-config.yaml #설정파일
         depends_on:
             - loki
+        networks:
+            - app_network
 
 
 volumes:
