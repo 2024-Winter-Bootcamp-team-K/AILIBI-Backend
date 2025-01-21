@@ -7,6 +7,8 @@ from drf_yasg import openapi
 from django.conf import settings
 import redis
 from .Serializers import WebSocketMessageSerializer, WebSocketConnectionSerializer
+from .consumers import MyConsumer
+from asgiref.sync import async_to_sync
 
 def websocket_test(request):
     """
@@ -62,26 +64,27 @@ class WebSocketConnectAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class WebSocketMessageAPIView(APIView):
+    """
+    WebSocket 메시지 전송 API
+    """
     def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
-    """
-    WebSocket 메시지 전송 API
-    """
+
     @swagger_auto_schema(
         request_body=WebSocketMessageSerializer,
         operation_id="WebSocket 메시지 전송",
-        operation_description="WebSocket으로 메시지를 전송합니다.",
+        operation_description="WebSocket으로 메시지를 전송하고 GPT 응답을 반환합니다.",
         responses={
             202: openapi.Response(
                 description="메시지 전송 성공",
                 examples={
                     "application/json": {
-                        "message": "메시지가 성공적으로 WebSocket으로 전송되었습니다.",
-                        "content": "안녕하세요!"
+                        "user_chat": "안녕하세요?",
+                        "suspect_chat": "안녕하세요. 무엇을 도와드릴까요?"
                     }
                 },
             ),
@@ -91,20 +94,32 @@ class WebSocketMessageAPIView(APIView):
     def post(self, request):
         serializer = WebSocketMessageSerializer(data=request.data)
         if serializer.is_valid():
-            message = serializer.validated_data['message']
+            user_message = serializer.validated_data['message']
 
-            # 메시지 처리 로직 (예제: Redis에 저장)
-            redis_conn = redis.Redis(host=settings.REDIS_HOST, port=6379, db=0)
-            redis_conn.rpush("websocket:messages", message)
+            try:
+                # GPT 응답 생성
+                gpt_response = async_to_sync(MyConsumer().get_gpt_response)(user_message)
 
-            return Response(
-                {
-                    "message": "메시지가 성공적으로 WebSocket으로 전송되었습니다.",
-                    "content": message,
-                },
-                status=status.HTTP_202_ACCEPTED,
-            )
+                # Redis에 저장 (선택적 사용)
+                redis_conn = redis.Redis(host=settings.REDIS_HOST, port=6379, db=0)
+                redis_conn.rpush("websocket:messages", user_message)
+                redis_conn.rpush("websocket:messages", gpt_response)
+
+                # 응답 반환
+                return Response(
+                    {
+                        "user_chat": user_message,
+                        "suspect_chat": gpt_response,
+                    },
+                    status=status.HTTP_202_ACCEPTED,
+                )
+            except Exception as e:
+                return Response(
+                    {"error": f"내부 서버 오류가 발생했습니다: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class WebSocketStatusAPIView(APIView):
     def options(self, request, *args, **kwargs):
