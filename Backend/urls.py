@@ -19,7 +19,7 @@ from django.urls import path, re_path, include
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-
+from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -59,4 +59,6 @@ urlpatterns = [
     path('api/v1/tts', include('tts.urls')),
 
     path('api/v1/chat', include('chat.urls')),
+
+    re_path(r'^.*$', TemplateView.as_view(template_name="index.html")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
