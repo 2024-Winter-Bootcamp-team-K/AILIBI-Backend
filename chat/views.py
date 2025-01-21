@@ -91,7 +91,8 @@ class WebSocketMessageAPIView(APIView):
             400: openapi.Response(description="잘못된 요청 데이터입니다."),
         },
     )
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+        suspect_id = kwargs.get('suspect_id')  # URL에서 추출한 suspect_id 가져오기
         serializer = WebSocketMessageSerializer(data=request.data)
         if serializer.is_valid():
             user_message = serializer.validated_data['message']
@@ -110,6 +111,7 @@ class WebSocketMessageAPIView(APIView):
                     {
                         "user_chat": user_message,
                         "suspect_chat": gpt_response,
+                        "suspect_id": suspect_id
                     },
                     status=status.HTTP_202_ACCEPTED,
                 )
