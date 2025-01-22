@@ -231,8 +231,8 @@ class ScenarioAPIView(APIView):
                     location=data["location"],
                     type=data["event_type"],
                     datetime=f"{data['year']}-{data['month']}-{data['day']} {data['hour']}:{data['minute']}",
-                    description=data["scenario_description"],
-                    image=data["scenario_image_url"],
+                    description=scenario_description,
+                    image="scenario_image_url",
                     level=2
                 )
 
