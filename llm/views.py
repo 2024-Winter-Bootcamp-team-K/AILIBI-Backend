@@ -170,7 +170,6 @@ class ScenarioAPIView(APIView):
                 scenario_input = truncate_prompt(scenario_input)
 
                 scenario_image_url = get_scenario_image(location, type)
-                female_image_url, male_image_urls = get_suspect_images()
 
                 # GPT-4 시나리오 생성
                 gpt_response = client.chat.completions.create(
@@ -290,7 +289,7 @@ class GenerateEvidenceAPIView(APIView):
                         f"Generate a piece of evidence for a deduction game. "
                         f"Create one piece of evidence ({i + 1}) that matches the following type and scenario. The output should be in Korean.\n\n"
                         f"Type: {scenario.type}\n"
-                        f"Scenario: {scenario.scenario_description}\n\n"
+                        f"Scenario: {scenario.description}\n\n"
                         f"The evidence must adhere to the following characteristics:\n"
                         f"1. It should be relevant to the incident described.\n"
                         f"2. The evidence name should be concise, with a maximum length of 16 characters (VARCHAR(16)).\n"
@@ -334,7 +333,7 @@ class GenerateEvidenceAPIView(APIView):
                         f"Generate an evidence image for a deduction game. "
                         f"Use the image generation tool to create an image of the evidence ({i + 1}) based on the following scenario, type, and evidence description, all provided in Korean.\n\n"
                         f"Type: {scenario.type}\n"
-                        f"Scenario: {scenario.scenario_description}\n"
+                        f"Scenario: {scenario.description}\n"
                         f"Evidence description: {evidence_description}\n\n"
                         f"Create an image that visually represents the evidence described. "
                         f"Ensure the image reflects the type, the scenario's context, and the details given in the evidence description. "
@@ -438,7 +437,7 @@ class GenerateSuspectAPIView(APIView):
                         f"You have created a fictional deduction game scenario and need to generate a suspect for it. "
                         f"Create one suspect ({i + 1}) based on the following event Type and scenario, provided in Korean.\n\n"
                         f"Type: {scenario.type}\n"
-                        f"Scenario: {scenario.scenario_description}\n\n"
+                        f"Scenario: {scenario.description}\n\n"
                         f"Follow these constraints when generating the suspect:\n"
                         f"1. Each suspect must have a name, job, and a description of their relationship to this scenario.\n"
                         f"2. If 'variable' = 0 is provided next, name it masculine; if 'variable' = 1, name it feminine. "
@@ -458,6 +457,9 @@ class GenerateSuspectAPIView(APIView):
                         f"All output must be in Korean.\n\n"
                         f"Generate the suspect now."
                     )
+
+                    female_image_url, male_image_urls = get_suspect_images()
+
                     suspect_response = client.chat.completions.create(
                         model="gpt-4",
                         messages=[{"role": "user", "content": suspect_prompt}]
@@ -481,10 +483,10 @@ class GenerateSuspectAPIView(APIView):
 
                         if gender_select == 0: # 남성
                             suspect_gender = False
-                            suspect_image_url = scenario.male_image_urls.pop(0)
+                            suspect_image_url = male_image_urls.pop(0)
                         elif gender_select == 1: #여성
                             suspect_gender = True
-                            suspect_image_url = scenario.female_image_url
+                            suspect_image_url = female_image_url
 
                         suspect_age = random.randint(20, 39) #나이 선택
 
