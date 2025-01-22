@@ -184,17 +184,17 @@ class ScenariosView(APIView):
     def get(self, request, scenario_id):
         try:
             scenario = Scenario.objects.get(id=scenario_id)
-            # suspects = Suspect.objects.filter(scenario_id=scenario_id)
-            # evidences = Evidence.objects.filter(scenario_id=scenario_id)
+            suspects = Suspect.objects.filter(scenario_id=scenario_id)
+            evidences = Evidence.objects.filter(scenario_id=scenario_id)
 
             scenario_data = ScenarioSerializer(scenario).data
-            # suspects_data = SuspectSerializer(suspects, many=True).data
-            # evidences_data = EvidenceSerializer(evidences, many=True).data
+            suspects_data = SuspectSerializer(suspects, many=True).data
+            evidences_data = EvidenceSerializer(evidences, many=True).data
 
             response_data = {
                 'scenarios': [scenario_data],
-                # 'suspects': suspects_data,
-                # 'evidences': evidences_data
+                'suspects': suspects_data,
+                'evidences': evidences_data
             }
 
             logger.info(f"user/views.py/ScenariosView - 200_OK : {response_data}")
