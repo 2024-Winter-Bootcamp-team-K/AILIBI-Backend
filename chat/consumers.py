@@ -6,6 +6,8 @@ from django_redis import get_redis_connection
 from openai import OpenAI
 from asgiref.sync import sync_to_async
 from django.apps import apps
+from django.shortcuts import get_object_or_404
+from .models import Chat
 import os
 
 # 로깅 설정
@@ -213,8 +215,8 @@ class MyConsumer(AsyncWebsocketConsumer):
         """
         새로운 chat_id를 생성하고 chat_id를 반환합니다.
         """
-        Chat = apps.get_model('chat', 'Chat')
-        new_chat = Chat.objects.create(suspect_id=self.suspect_id, user_chat="", suspect_chat="")
+        
+        new_chat = Chat.objects.create(user_chat="", suspect_chat="")
         return new_chat.id
 
     @sync_to_async
@@ -303,22 +305,19 @@ class MyConsumer(AsyncWebsocketConsumer):
         사용자 메시지와 GPT 응답을 chat_id 레코드에 누적하여 저장합니다.
         """
         try:
-            # 'chat' 앱의 Chat 모델 가져오기
-            Chat = apps.get_model('chat', 'Chat')
 
-            # 기존 chat_id 레코드 가져오기
-            chat_instance = Chat.objects.get(id=self.chat_id)
+            chat = get_object_or_404(Chat, suspect_id=self.suspect_id)
 
-            # 기존 메시지에 새 메시지를 누적
-            chat_instance.user_chat += f"\nUser: {user_message}"  # 사용자 메시지 추가
-            chat_instance.suspect_chat += f"\nGPT: {gpt_response}"  # GPT 응답 추가
+            # 기존의 user_chat, suspect_chat 불러오기
+            user_chat = chat.user_chat
+            suspect_chat = chat.suspect_chat
 
-            # 변경 사항 저장
-            chat_instance.save()
+            # 새로운 대화 기록을 데이터베이스에 저장
+            chat.user_chat = f"{user_chat}/CHANGE {user_message}"
+            chat.suspect_chat = f"{suspect_chat}/CHANGE {gpt_response}"
+            chat.save()
 
             logger.info(f"Chat message updated for chat_id {self.chat_id}: User: {user_message}, GPT: {gpt_response}")
-        except Chat.DoesNotExist:
-            logger.error(f"Chat with id {self.chat_id} does not exist.")
         except Exception as e:
             logger.error(f"Error updating chat message: {str(e)}", exc_info=True)
 
