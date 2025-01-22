@@ -12,13 +12,13 @@ global:
 #  - /etc/prometheus/alert-rules.yml
 
 scrape_configs:
-  - job_name: 'cadvisor'
-    static_configs:
-      - targets: ['cadvisor:8080']
-
   - job_name: 'prometheus'
     static_configs:
       - targets: [ 'prometheus:9090' ]
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
 
   - job_name: 'node_exporter'
     static_configs:
@@ -44,7 +44,3 @@ scrape_configs:
   - job_name: 'nginx_exporter' #정하고 싶은 이름
     static_configs:
       - targets: [ 'nginx_exporter:9113' ] #<서비스_이름>:<포트>
-
-  - job_name: 'postgres_exporte'
-    static_configs:
-      - targets: ['postgres_exporter:9187']
