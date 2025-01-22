@@ -7,7 +7,6 @@ from openai import OpenAI
 from asgiref.sync import sync_to_async
 from django.apps import apps
 from django.shortcuts import get_object_or_404
-from .models import Chat
 import os
 
 # 로깅 설정
@@ -42,6 +41,10 @@ class MyConsumer(AsyncWebsocketConsumer):
         logger.info(f"Connecting to WebSocket with suspect_id: {self.suspect_id}")
 
         # chat_id 가져오기
+        
+        # 'chat' 앱의 Chat 모델 가져오기
+            Chat = apps.get_model('chat', 'Chat')
+        
         self.chat_id = await self.get_chat_id()
         if not self.chat_id: # chat_id가 없을경우 새로 생성
             self.chat_id = await self.create_new_chat()
@@ -215,6 +218,8 @@ class MyConsumer(AsyncWebsocketConsumer):
         """
         새로운 chat_id를 생성하고 chat_id를 반환합니다.
         """
+        # 'chat' 앱의 Chat 모델 가져오기
+            Chat = apps.get_model('chat', 'Chat')
         
         new_chat = Chat.objects.create(user_chat="", suspect_chat="")
         return new_chat.id
@@ -305,6 +310,8 @@ class MyConsumer(AsyncWebsocketConsumer):
         사용자 메시지와 GPT 응답을 chat_id 레코드에 누적하여 저장합니다.
         """
         try:
+            # 'chat' 앱의 Chat 모델 가져오기
+            Chat = apps.get_model('chat', 'Chat')
 
             chat = get_object_or_404(Chat, suspect_id=self.suspect_id)
 
