@@ -477,8 +477,9 @@ class GenerateSuspectAPIView(APIView):
                         print(f"suspect data : {suspect_data}\n")
                         print(f"suspect data_type : {type(suspect_data)}\n")
 
-                    try:
+                    suspect_gender = None
 
+                    try:
                         suspect_name = suspect_data[0].split(":")[1].strip()   # 이름 추출
 
                         if gender_select == 0: # 남성
