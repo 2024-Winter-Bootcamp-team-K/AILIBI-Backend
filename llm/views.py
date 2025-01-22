@@ -118,9 +118,7 @@ class ScenarioAPIView(APIView):
         }
     )
     def post(self, request):
-        #디버그 옵션
         debug = False
-
         if request.method == "POST":
             try:
                 data = json.loads(request.body)
@@ -232,13 +230,30 @@ class ScenarioAPIView(APIView):
                     type=data["event_type"],
                     datetime=f"{data['year']}-{data['month']}-{data['day']} {data['hour']}:{data['minute']}",
                     description=scenario_description,
-                    image="scenario_image_url",
+                    image=scenario_image_url,
                     level=2
                 )
+                logger.info(f"llm/views.py/post - 시나리오 생성 완료: {scenario.id}")
+                return JsonResponse({"scenario_id": scenario.id,
+                                    "scenario_description": scenario_description,
+                                    "scenario_image": scenario_image_url,
+                                    }, status=201)
+            except Exception as e:
+                logger.exception(f"llm/views.py/post - 시나리오 생성 예외 발생 : {e}")
+                return JsonResponse({"error": str(e)}, status=500)
 
-                scenario_id = scenario.id
+        logger.error(f"llm/views.py/post - error : Invalid request method")
+        return JsonResponse({"error": "Invalid request method"}, status=502)
 
-                # Evidence 생성
+class GenerateEvidenceAPIView(APIView):
+    def post(self, request):
+        debug = False
+        if request.method == "POST":
+            try:
+                data = json.loads(request.body)
+                scenario_id = data.get("scenario_id")
+                scenario = Scenario.objects.get(id=scenario_id)
+
                 evidence_list = []
                 evidence_name_last = []
                 for i in range(int(data.get("evidence_count", 2))):
@@ -249,8 +264,8 @@ class ScenarioAPIView(APIView):
                     evidence_prompt = (
                         f"Generate a piece of evidence for a deduction game. "
                         f"Create one piece of evidence ({i + 1}) that matches the following event type and scenario. The output should be in Korean.\n\n"
-                        f"Event type: {event_type}\n"
-                        f"Scenario: {scenario_description}\n\n"
+                        f"Event type: {scenario.event_type}\n"
+                        f"Scenario: {scenario.scenario_description}\n\n"
                         f"The evidence must adhere to the following characteristics:\n"
                         f"1. It should be relevant to the incident described.\n"
                         f"2. The evidence name should be concise, with a maximum length of 16 characters (VARCHAR(16)).\n"
@@ -293,8 +308,8 @@ class ScenarioAPIView(APIView):
                     evidence_image_prompt = (
                         f"Generate an evidence image for a deduction game. "
                         f"Use the image generation tool to create an image of the evidence ({i + 1}) based on the following scenario, event type, and evidence description, all provided in Korean.\n\n"
-                        f"Event type: {event_type}\n"
-                        f"Scenario: {scenario_description}\n"
+                        f"Event type: {scenario.event_type}\n"
+                        f"Scenario: {scenario.scenario_description}\n"
                         f"Evidence description: {evidence_description}\n\n"
                         f"Create an image that visually represents the evidence described. "
                         f"Ensure the image reflects the event type, the scenario's context, and the details given in the evidence description. "
@@ -311,7 +326,7 @@ class ScenarioAPIView(APIView):
                     image_data = requests.get(generate_image_url).content
 
                     # S3에 이미지 업로드
-                    uploaded_image_url = upload_to_s3(f"user_{user_id}_scenario_{scenario.id}_evidence_{i + 1}.png", image_data, "image/png")
+                    uploaded_image_url = upload_to_s3(f"user_{scenario.user_id}_scenario_{scenario.id}_evidence_{i + 1}.png", image_data, "image/png")
 
                     evidence_image_url = uploaded_image_url if uploaded_image_url else "test.jpg"
 
@@ -333,7 +348,25 @@ class ScenarioAPIView(APIView):
                         "image":evidence_image_url
                     })
 
-                # Suspect 생성
+                logger.info(f"llm/views.py/post - 증거 생성 완료: {scenario_id}")
+                return JsonResponse({"evidences": evidence_list}, status=200)
+
+            except Exception as e:
+                logger.exception(f"llm/views.py/post - 증거 생성 예외 발생 : {e}")
+                return JsonResponse({"error": str(e)}, status=500)
+
+        logger.error(f"llm/views.py/post - error : Invalid request method")
+        return JsonResponse({"error": "Invalid request method"}, status=502)
+
+class GenerateSuspectAPIView(APIView):
+    def post(self, request):
+        debug = False
+        if request.method == "POST":
+            try:
+                data = json.loads(request.body)
+                scenario_id = data.get("scenario_id")
+                scenario = Scenario.objects.get(id=scenario_id)
+
                 suspect_list = []
                 genders = [0, 0, 1]  # 0: 남성, 1: 여성
                 task_ids = [1, 2, 3]
@@ -348,8 +381,8 @@ class ScenarioAPIView(APIView):
                     suspect_prompt = (
                         f"You have created a fictional deduction game scenario and need to generate a suspect for it. "
                         f"Create one suspect ({i + 1}) based on the following event type and scenario, provided in Korean.\n\n"
-                        f"Event type: {event_type}\n"
-                        f"Scenario: {scenario_description}\n\n"
+                        f"Event type: {scenario.event_type}\n"
+                        f"Scenario: {scenario.scenario_description}\n\n"
                         f"Follow these constraints when generating the suspect:\n"
                         f"1. Each suspect must have a name, job, and a description of their relationship to this scenario.\n"
                         f"2. If 'variable' = 0 is provided next, name it masculine; if 'variable' = 1, name it feminine. "
@@ -392,10 +425,10 @@ class ScenarioAPIView(APIView):
 
                         if gender_select == 0: # 남성
                             suspect_gender = False
-                            suspect_image_url = male_image_urls.pop(0)
+                            suspect_image_url = scenario.male_image_urls.pop(0)
                         elif gender_select == 1: #여성
                             suspect_gender = True
-                            suspect_image_url = female_image_url
+                            suspect_image_url = scenario.female_image_url
 
                         suspect_age = random.randint(20, 39) #나이 선택
 
@@ -481,17 +514,11 @@ class ScenarioAPIView(APIView):
                         "task_id": task_id
                     })
 
-                logger.info(f"llm/views.py/post - 시나리오 생성 완료: {scenario_id}")
-                return JsonResponse({
-                    "scenario_id": scenario.id,
-                    "scenario_description": scenario_description,
-                    "scenario_image": scenario_image_url,
-                    "evidence": evidence_list,
-                    "suspects": suspect_list
-                }, status=200)
+                logger.info(f"llm/views.py/post - 용의자 생성 완료: {scenario_id}")
+                return JsonResponse({"suspects": suspect_list}, status=200)
 
             except Exception as e:
-                logger.exception(f"llm/views.py/post - 예외 발생 : {e}")
+                logger.exception(f"llm/views.py/post - 용의자 생성 예외 발생 : {e}")
                 return JsonResponse({"error": str(e)}, status=500)
 
         logger.error(f"llm/views.py/post - error : Invalid request method")
