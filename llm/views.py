@@ -33,9 +33,9 @@ s3_client = boto3.client(
     region_name=settings.AWS_S3_REGION_NAME,
 )
 
-def get_scenario_image(location, event_type):
-    # S3 파일 이름 형식: "scenario/{location} {event_type}.png"
-    s3_scenario_name = f"scenario/{location}{event_type}.png"
+def get_scenario_image(location, type):
+    # S3 파일 이름 형식: "scenario/{location} {type}.png"
+    s3_scenario_name = f"scenario/{location}{type}.png"
     s3_scenario_name_encoded = quote(s3_scenario_name)
     s3_scenario_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{s3_scenario_name_encoded}"
     return s3_scenario_url
@@ -107,9 +107,9 @@ class ScenarioAPIView(APIView):
                 'hour': openapi.Schema(type=openapi.TYPE_STRING, description="시"),
                 'minute': openapi.Schema(type=openapi.TYPE_STRING, description="분"),
                 'location': openapi.Schema(type=openapi.TYPE_STRING, description="사건 장소"),
-                'event_type': openapi.Schema(type=openapi.TYPE_STRING, description="사건 종류"),
+                'type': openapi.Schema(type=openapi.TYPE_STRING, description="사건 종류"),
             },
-            required=['user_id', 'year', 'month', 'day', 'hour', 'minute', 'location', 'event_type'],  # 필수 값 설정
+            required=['user_id', 'year', 'month', 'day', 'hour', 'minute', 'location', 'type'],  # 필수 값 설정
         ),
         responses={
             201: openapi.Response('시나리오 생성 성공', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
@@ -140,12 +140,12 @@ class ScenarioAPIView(APIView):
                 hour = data.get("hour")
                 minute = data.get("minute")
                 location = data.get("location")
-                event_type = data.get("event_type")
+                type = data.get("type")
 
                 # 필수 필드 검증
-                if not (year and month and day and hour and minute and location and event_type):
-                    logger.error(f"llm/views.py/post - error : Year, month, day, hour, minute, location, and event_type must be provided.")
-                    return JsonResponse({"error": "Year, month, day, hour, minute, location, and event_type must be provided."}, status=502)
+                if not (year and month and day and hour and minute and location and type):
+                    logger.error(f"llm/views.py/post - error : Year, month, day, hour, minute, location, and type must be provided.")
+                    return JsonResponse({"error": "Year, month, day, hour, minute, location, and type must be provided."}, status=502)
 
                 if debug:
                     print("loading...\n\n")
@@ -158,7 +158,7 @@ class ScenarioAPIView(APIView):
                     f"First, generate only the case scenario.\n\n"
                     f"Here are the characteristics to follow when creating the scenario:\n"
                     f"1. Location of the incident: {location}\n"
-                    f"2. Type of event: {event_type}\n"
+                    f"2. Type of event: {type}\n"
                     f"3. Date and time of occurrence: {year}-{month}-{day} {hour}:{minute}\n"
                     f"4. There is only one culprit. There can be no accomplices.\n"
                     f"5. There are {3} suspects and {2} pieces of evidence. Do not include these in the scenario. However, keep them in mind when creating the scenario.\n"
@@ -169,7 +169,7 @@ class ScenarioAPIView(APIView):
 
                 scenario_input = truncate_prompt(scenario_input)
 
-                scenario_image_url = get_scenario_image(location, event_type)
+                scenario_image_url = get_scenario_image(location, type)
                 female_image_url, male_image_urls = get_suspect_images()
 
                 # GPT-4 시나리오 생성
@@ -196,7 +196,7 @@ class ScenarioAPIView(APIView):
                 image_prompt = (
                     f"Generate an image for a deduction game using the image generation tool. "
                     f"The image should depict a crime scene that fits the following scenario described in Korean.\n\n"
-                    f"Event type: {event_type}\n"
+                    f"Event type: {type}\n"
                     f"Scenario: {scenario_description}\n"
                     f"Time of incident: {year}-{month}-{day} {hour}:{minute}\n"
                     f"Location of the incident: {location}\n\n"
@@ -226,9 +226,9 @@ class ScenarioAPIView(APIView):
                 # Scenario 저장
                 scenario = Scenario.objects.create(
                     user_id=data["user_id"],
-                    name=f"{data['location']} {data['event_type']}",
+                    name=f"{data['location']} {data['type']}",
                     location=data["location"],
-                    type=data["event_type"],
+                    type=data["type"],
                     datetime=f"{data['year']}-{data['month']}-{data['day']} {data['hour']}:{data['minute']}",
                     description=scenario_description,
                     image=scenario_image_url,
@@ -288,8 +288,8 @@ class GenerateEvidenceAPIView(APIView):
 
                     evidence_prompt = (
                         f"Generate a piece of evidence for a deduction game. "
-                        f"Create one piece of evidence ({i + 1}) that matches the following event type and scenario. The output should be in Korean.\n\n"
-                        f"Event type: {scenario.event_type}\n"
+                        f"Create one piece of evidence ({i + 1}) that matches the following type and scenario. The output should be in Korean.\n\n"
+                        f"Type: {scenario.type}\n"
                         f"Scenario: {scenario.scenario_description}\n\n"
                         f"The evidence must adhere to the following characteristics:\n"
                         f"1. It should be relevant to the incident described.\n"
@@ -332,12 +332,12 @@ class GenerateEvidenceAPIView(APIView):
 
                     evidence_image_prompt = (
                         f"Generate an evidence image for a deduction game. "
-                        f"Use the image generation tool to create an image of the evidence ({i + 1}) based on the following scenario, event type, and evidence description, all provided in Korean.\n\n"
-                        f"Event type: {scenario.event_type}\n"
+                        f"Use the image generation tool to create an image of the evidence ({i + 1}) based on the following scenario, type, and evidence description, all provided in Korean.\n\n"
+                        f"Type: {scenario.type}\n"
                         f"Scenario: {scenario.scenario_description}\n"
                         f"Evidence description: {evidence_description}\n\n"
                         f"Create an image that visually represents the evidence described. "
-                        f"Ensure the image reflects the event type, the scenario's context, and the details given in the evidence description. "
+                        f"Ensure the image reflects the type, the scenario's context, and the details given in the evidence description. "
                         f"Output the generated image."
                     )
 
@@ -436,8 +436,8 @@ class GenerateSuspectAPIView(APIView):
                     task_id = genders[i]["task_id"]
                     suspect_prompt = (
                         f"You have created a fictional deduction game scenario and need to generate a suspect for it. "
-                        f"Create one suspect ({i + 1}) based on the following event type and scenario, provided in Korean.\n\n"
-                        f"Event type: {scenario.event_type}\n"
+                        f"Create one suspect ({i + 1}) based on the following event Type and scenario, provided in Korean.\n\n"
+                        f"Type: {scenario.type}\n"
                         f"Scenario: {scenario.scenario_description}\n\n"
                         f"Follow these constraints when generating the suspect:\n"
                         f"1. Each suspect must have a name, job, and a description of their relationship to this scenario.\n"
