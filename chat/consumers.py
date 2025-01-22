@@ -42,9 +42,6 @@ class MyConsumer(AsyncWebsocketConsumer):
 
         # chat_id 가져오기
         
-        # 'chat' 앱의 Chat 모델 가져오기
-            Chat = apps.get_model('chat', 'Chat')
-        
         self.chat_id = await self.get_chat_id()
         if not self.chat_id: # chat_id가 없을경우 새로 생성
             self.chat_id = await self.create_new_chat()
