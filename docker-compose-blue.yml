@@ -91,7 +91,7 @@ services:
             - GF_SECURITY_ADMIN_USER=admin
             - GF_SECURITY_ADMIN_PASSWORD=admin
             - GF_SERVER_HTTP_PORT=4000
-            - GF_SERVER_ROOT_URL= ${GF_SERVER_ROOT_URL}
+            #- GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL}
         ports:
             - "4000:4000"
         user: "472:472"
@@ -143,19 +143,6 @@ services:
         networks:
             - app_network
 
-
-    postgres_exporter:
-        image: quay.io/prometheuscommunity/postgres-exporter:latest
-        container_name: postgres_exporter
-        restart: always
-        environment:
-            DATA_SOURCE_NAME: "postgresql://${DB_USER}:${DB_PASSWORD}@postgresql:5432/${DB_NAME}?sslmode=disable"
-        ports:
-            - "9187:9187"
-        networks:
-            - app_network
-        depends_on:
-            - postgresql
 
 
 #    alertmanager: #slack에 알림
