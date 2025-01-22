@@ -3,6 +3,6 @@ from .views import ScenarioAPIView, GenerateEvidenceAPIView, GenerateSuspectAPIV
 
 urlpatterns = [
     path('/create', ScenarioAPIView.as_view(), name='create_scenario'),
-    path('/evidence', GenerateEvidenceAPIView.as_view(), name='generate_evidence'),
-    path('/suspect', GenerateSuspectAPIView.as_view(), name='generate_suspect'),
+    path('/evidence/<int:scenario_id>', GenerateEvidenceAPIView.as_view(), name='generate_evidence'),
+    path('/suspect/<int:scenario_id>', GenerateSuspectAPIView.as_view(), name='generate_suspect'),
 ]
