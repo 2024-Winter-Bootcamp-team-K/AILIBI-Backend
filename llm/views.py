@@ -275,7 +275,8 @@ class GenerateEvidenceAPIView(APIView):
         debug = False
         if request.method == "POST":
             try:
-                scenario_id = self.kwargs.get('scenario_id')
+                data = json.loads(request.body)
+                scenario_id = data.get["scenario_id"]
                 scenario = Scenario.objects.get(id=scenario_id)
 
                 evidence_list = []
@@ -411,7 +412,8 @@ class GenerateSuspectAPIView(APIView):
         debug = False
         if request.method == "POST":
             try:
-                scenario_id = self.kwargs.get('scenario_id')
+                data = json.loads(request.body)
+                scenario_id = data.get["scenario_id"]
                 scenario = Scenario.objects.get(id=scenario_id)
 
                 suspect_list = []
