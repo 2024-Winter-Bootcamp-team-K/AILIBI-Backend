@@ -58,8 +58,6 @@ EC2_KEY = secret_data.get('EC2_KEY', os.getenv('EC2_KEY', 'your-ec2-key'))
 EC2_HOST = secret_data.get('EC2_HOST', os.getenv('EC2_HOST', 'your-ec2-host'))
 EC2_NAME = secret_data.get('EC2_NAME', os.getenv('EC2_NAME', 'your-ec2-name'))
 
-GF_SERVER_ROOT_URL=secret_data.get('GF_SERVER_ROOT_URL', os.getenv('GF_SERVER_ROOT_URL', 'your-gf-server-root-url'))
-
 
 # S3 Storage settings
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
