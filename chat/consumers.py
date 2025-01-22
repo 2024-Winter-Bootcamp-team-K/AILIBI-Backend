@@ -252,7 +252,7 @@ class MyConsumer(AsyncWebsocketConsumer):
                 f"1. the fictional scenario is as follows\n"
                 f"- The location of the incident: {suspect['scenario']['location']}\n"
                 f"- Time of the incident : {suspect['scenario']['datetime']}\n"
-                f"- Type of incident : suspect['scenario']['datetime']\n"
+                f"- Type of incident : {suspect['scenario']['type']}\n"
                 f"- Detailed description of the incident : {suspect['scenario']['description']}\n\n"
                 f"2. the suspect you need to create has the following characteristics\n"
                 f"- Name : {suspect['name']}\n"
@@ -267,11 +267,13 @@ class MyConsumer(AsyncWebsocketConsumer):
                 f"4. the transcript of the conversation so far is as follows.\n"
                 f"{formatted_history}\n"
                 f"5. {goal}\n"
-                f"6. The detective's (user's) questions were given as follows: {user_message} "
-                f"Give the appropriate answers : \n"
+                f"6. The detective's questions were given as follows: {user_message} \n"
+                f"Give the appropriate answers \n"
+                f"The role of user's message is : {user_message}, Don't repeat again. \n"
                 f"7. All answers should be printed in Korean. \n"
                 f"8. Answer in the first person. \n"
                 f"9. Output only one answer. \n"
+                f"10. Do not include role that user && assistant on your message. \n"
             )
 
             logger.debug(f"Prompt created: {prompt}")

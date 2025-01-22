@@ -157,7 +157,7 @@ ASGI_APPLICATION = "Backend.asgi.application"
 WSGI_APPLICATION = 'Backend.wsgi.application'
 
 # Redis 호스트 이름 설정
-REDIS_HOST = os.getenv('REDIS_HOST', 'redis')  # 기본값: redis
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')  # 기본값: redis
 
 # Channels 설정
 CHANNEL_LAYERS = {
