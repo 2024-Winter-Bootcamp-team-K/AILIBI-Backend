@@ -216,7 +216,7 @@ class MyConsumer(AsyncWebsocketConsumer):
         새로운 chat_id를 생성하고 chat_id를 반환합니다.
         """
         # 'chat' 앱의 Chat 모델 가져오기
-            Chat = apps.get_model('chat', 'Chat')
+        Chat = apps.get_model('chat', 'Chat')
         
         new_chat = Chat.objects.create(user_chat="", suspect_chat="")
         return new_chat.id
