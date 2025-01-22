@@ -477,8 +477,8 @@ class GenerateSuspectAPIView(APIView):
                         print(f"suspect data : {suspect_data}\n")
                         print(f"suspect data_type : {type(suspect_data)}\n")
 
-                    suspect_gender = None
-                    suspect_image_url = None
+                    suspect_gender = False
+                    suspect_image_url = "default.png"
 
                     try:
                         suspect_name = suspect_data[0].split(":")[1].strip()   # 이름 추출
