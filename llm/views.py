@@ -276,12 +276,12 @@ class GenerateEvidenceAPIView(APIView):
         if request.method == "POST":
             try:
                 data = json.loads(request.body)
-                scenario_id = data.get("scenario_id")
+                scenario_id = data.get["scenario_id"]
                 scenario = Scenario.objects.get(id=scenario_id)
 
                 evidence_list = []
                 evidence_name_last = []
-                for i in range(int(data.get("evidence_count", 2))):
+                for i in range(2):
 
                     if debug:
                         print(f"evidence_name_last : {evidence_name_last}\n")
@@ -413,7 +413,7 @@ class GenerateSuspectAPIView(APIView):
         if request.method == "POST":
             try:
                 data = json.loads(request.body)
-                scenario_id = data.get("scenario_id")
+                scenario_id = data.get["scenario_id"]
                 scenario = Scenario.objects.get(id=scenario_id)
 
                 suspect_list = []
@@ -423,10 +423,17 @@ class GenerateSuspectAPIView(APIView):
                 shuffle(genders)  # 남성 2명, 여성 1명으로 섞음
                 shuffle(criminal_index) # 범인과 무고인을 섞음
 
+                # 여성에게 항상 task_id 3을 부여
+                for i, gender in enumerate(genders):
+                    if gender == 1:  # 여성
+                        genders[i] = {"gender": gender, "task_id": 3}
+                    else:  # 남성
+                        genders[i] = {"gender": gender, "task_id": task_ids.pop(0)}  # 남성에게 남은 task_id 할당
+
                 for i in range(3):
                     criminal_select = criminal_index[i]
                     gender_select = genders[i]
-                    task_id = task_ids.pop(genders.index(gender_select))  # gender에 따른 task_id 할당
+                    task_id = genders[i]["task_id"]
                     suspect_prompt = (
                         f"You have created a fictional deduction game scenario and need to generate a suspect for it. "
                         f"Create one suspect ({i + 1}) based on the following event type and scenario, provided in Korean.\n\n"
