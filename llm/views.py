@@ -100,6 +100,7 @@ class ScenarioAPIView(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
+                'user_id': openapi.Schema(type=openapi.TYPE_INTEGER, description="user_id"),
                 'year': openapi.Schema(type=openapi.TYPE_STRING, description="연도"),
                 'month': openapi.Schema(type=openapi.TYPE_STRING, description="월"),
                 'day': openapi.Schema(type=openapi.TYPE_STRING, description="일"),
@@ -108,7 +109,7 @@ class ScenarioAPIView(APIView):
                 'location': openapi.Schema(type=openapi.TYPE_STRING, description="사건 장소"),
                 'event_type': openapi.Schema(type=openapi.TYPE_STRING, description="사건 종류"),
             },
-            required=['year', 'month', 'day', 'hour', 'minute', 'location', 'event_type'],  # 필수 값 설정
+            required=['user_id', 'year', 'month', 'day', 'hour', 'minute', 'location', 'event_type'],  # 필수 값 설정
         ),
         responses={
             201: openapi.Response('시나리오 생성 성공', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
@@ -246,6 +247,30 @@ class ScenarioAPIView(APIView):
         return JsonResponse({"error": "Invalid request method"}, status=502)
 
 class GenerateEvidenceAPIView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+
+    @swagger_auto_schema(
+        operation_id="증거 생성하기",
+        operation_description="증거 생성하기",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'scenario_id': openapi.Schema(type=openapi.TYPE_INTEGER, description="user_id")
+            },
+            required=['scenario_id'],  # 필수 값 설정
+        ),
+        responses={
+            201: openapi.Response('증거 생성 성공', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
+            400: openapi.Response(description="scenario_id 오류"),
+            500: openapi.Response(description="예상치 못한 예외 발생"),
+            502: openapi.Response(description="입력 값이 잘 못 되었거나 HTTP method가 잘 못되었습니다.")
+        }
+    )
     def post(self, request):
         debug = False
         if request.method == "POST":
@@ -359,6 +384,30 @@ class GenerateEvidenceAPIView(APIView):
         return JsonResponse({"error": "Invalid request method"}, status=502)
 
 class GenerateSuspectAPIView(APIView):
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+
+    @swagger_auto_schema(
+        operation_id="증거 생성하기",
+        operation_description="증거 생성하기",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'scenario_id': openapi.Schema(type=openapi.TYPE_INTEGER, description="user_id")
+            },
+            required=['scenario_id'],  # 필수 값 설정
+        ),
+        responses={
+            201: openapi.Response('증거 생성 성공', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
+            400: openapi.Response(description="scenario_id 오류"),
+            500: openapi.Response(description="예상치 못한 예외 발생"),
+            502: openapi.Response(description="입력 값이 잘 못 되었거나 HTTP method가 잘 못되었습니다.")
+        }
+    )
     def post(self, request):
         debug = False
         if request.method == "POST":
