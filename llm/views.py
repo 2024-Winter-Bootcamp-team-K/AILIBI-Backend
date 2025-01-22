@@ -226,16 +226,21 @@ class ScenarioAPIView(APIView):
 
                 # Scenario 저장
                 scenario = Scenario.objects.create(
-                    user_id=user_id,
-                    name=f"{location} {event_type}",
-                    location=location,
-                    type=event_type,
-                    datetime=f"{year}-{month}-{day} {hour}:{minute}",
-                    description=scenario_description,
-                    image=scenario_image_url,
+                    user_id=data["user_id"],
+                    name=f"{data['location']} {data['event_type']}",
+                    location=data["location"],
+                    type=data["event_type"],
+                    datetime=f"{data['year']}-{data['month']}-{data['day']} {data['hour']}:{data['minute']}",
                     level=2
                 )
+
                 scenario_id = scenario.id  # AutoField에서 ID 가져오기
+
+                # 시나리오 ID 반환
+                return JsonResponse({"scenario_id": scenario.id}, status=201)
+            except Exception as e:
+                logger.error(f"Error creating scenario: {e}")
+                return JsonResponse({"error": "Scenario creation failed."}, status=500)
 
                 # Evidence 생성
                 evidence_list = []
@@ -487,7 +492,7 @@ class ScenarioAPIView(APIView):
                     "scenario_image": scenario_image_url,
                     "evidence": evidence_list,
                     "suspects": suspect_list
-                }, status=201)
+                }, status=200)
 
             except Exception as e:
                 logger.exception(f"llm/views.py/post - 예외 발생 : {e}")
