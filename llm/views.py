@@ -335,6 +335,7 @@ class ScenarioAPIView(APIView):
                 # Suspect 생성
                 suspect_list = []
                 genders = [0, 0, 1]  # 0: 남성, 1: 여성
+                task_ids = [1, 2, 3]
                 criminal_index = [0, 0, 1]  # 0: 무고인, 1: 범인
                 shuffle(genders)  # 남성 2명, 여성 1명으로 섞음
                 shuffle(criminal_index) # 범인과 무고인을 섞음
@@ -342,6 +343,7 @@ class ScenarioAPIView(APIView):
                 for i in range(3):
                     criminal_select = criminal_index[i]
                     gender_select = genders[i]
+                    task_id = task_ids.pop(genders.index(gender_select))  # gender에 따른 task_id 할당
                     suspect_prompt = (
                         f"You have created a fictional deduction game scenario and need to generate a suspect for it. "
                         f"Create one suspect ({i + 1}) based on the following event type and scenario, provided in Korean.\n\n"
@@ -474,7 +476,8 @@ class ScenarioAPIView(APIView):
                         "description" : suspect_description,
                         "init_chat" : suspect_initial_statement,
                         "is_theif": is_theif,
-                        "image": suspect_image_url
+                        "image": suspect_image_url,
+                        "task_id": task_id
                     })
 
                 logger.info(f"llm/views.py/post - 시나리오 생성 완료: {scenario_id}")
