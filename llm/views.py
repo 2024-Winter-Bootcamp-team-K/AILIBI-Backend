@@ -391,7 +391,7 @@ class GenerateSuspectAPIView(APIView):
                         f"4. The suspect's name must be a three-character Korean name.\n"
                         f"5. The job must be a real occupation, limited to 16 characters (VARCHAR(16)).\n"
                         f"6. The description should be based on their relationship to the victim and the incident.\n"
-                        f"7. Generate an initial statement from the suspect based on the description of the suspect you created.\n"
+                        f"7. Generate an initial statement from the suspect based on the description of the suspect you created. The length of the initial statement is limited to 75 characters in Korean.\n"
                         f"8. There is only one true culprit, with no accomplices.\n"
                         f"9. Use the following format for the output:\n"
                         f"Name:\n"
