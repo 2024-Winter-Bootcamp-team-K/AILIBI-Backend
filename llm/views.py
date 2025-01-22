@@ -276,7 +276,7 @@ class GenerateEvidenceAPIView(APIView):
         if request.method == "POST":
             try:
                 data = json.loads(request.body)
-                scenario_id = data.get["scenario_id"]
+                scenario_id = data.get("scenario_id")
                 scenario = Scenario.objects.get(id=scenario_id)
 
                 evidence_list = []
@@ -413,7 +413,7 @@ class GenerateSuspectAPIView(APIView):
         if request.method == "POST":
             try:
                 data = json.loads(request.body)
-                scenario_id = data.get["scenario_id"]
+                scenario_id = data.get("scenario_id")
                 scenario = Scenario.objects.get(id=scenario_id)
 
                 suspect_list = []
