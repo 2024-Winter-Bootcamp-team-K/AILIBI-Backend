@@ -39,6 +39,12 @@ class MyConsumer(AsyncWebsocketConsumer):
         self.room_group_name = f'chat_{self.suspect_id}'
         logger.info(f"Connecting to WebSocket with suspect_id: {self.suspect_id}")
 
+        # chat_id 가져오기
+        self.chat_id = await self.get_chat_id()
+        if not self.chat_id: # chat_id가 없을경우 새로 생성
+            self.chat_id = await self.create_new_chat()
+            logger.info(f"New chat created for suspect_id {self.suspect_id} with chat_id {self.chat_id}")
+
         # Redis 캐시 초기화 (기존 대화 기록 삭제)
         cache_key = f'gptchat_suspect_{self.suspect_id}'
         redis_conn.delete(cache_key)
@@ -189,7 +195,27 @@ class MyConsumer(AsyncWebsocketConsumer):
             logger.error(f"Suspect with ID {suspect_id} does not exist.")
             return None
 
+    @sync_to_async
+    def get_chat_id(self):
+        """
+        suspect_id를 기반으로 chat_id를 가져옵니다.
+        """
+        try:
+            Chat = apps.get_model('chat', 'Chat')
+            chat = Chat.objects.get(suspect_id=self.suspect_id)  # suspect_id와 연결된 레코드 조회
+            return chat.id  # chat_id 반환
+        except Chat.DoesNotExist:
+            logger.error(f"No chat record found for suspect_id: {self.suspect_id}")
+            return None
 
+    @sync_to_async
+    def create_new_chat(self):
+        """
+        새로운 chat_id를 생성하고 chat_id를 반환합니다.
+        """
+        Chat = apps.get_model('chat', 'Chat')
+        new_chat = Chat.objects.create(suspect_id=self.suspect_id, user_chat="", suspect_chat="")
+        return new_chat.id
 
     @sync_to_async
     def create_prompt(self, suspect, history, user_message):
@@ -274,20 +300,25 @@ class MyConsumer(AsyncWebsocketConsumer):
     @sync_to_async
     def save_chat_message(self, user_message, gpt_response):
         """
-        사용자 메시지와 GPT 응답을 데이터베이스에 저장합니다.
+        사용자 메시지와 GPT 응답을 chat_id 레코드에 누적하여 저장합니다.
         """
         try:
             # 'chat' 앱의 Chat 모델 가져오기
             Chat = apps.get_model('chat', 'Chat')
 
-            # 새로운 대화 기록을 데이터베이스에 저장
-            Chat.objects.create(
-                suspect_id=self.suspect_id,  # 현재 대화 중인 용의자 ID
-                user_chat=user_message,  # 사용자 메시지
-                suspect_chat=gpt_response  # GPT 응답
-            )
-            logger.info(f"Chat message saved: User: {user_message}, GPT: {gpt_response}")
-        except Exception as e:
-            logger.error(f"Error saving chat message: {str(e)}", exc_info=True)
+            # 기존 chat_id 레코드 가져오기
+            chat_instance = Chat.objects.get(id=self.chat_id)
 
+            # 기존 메시지에 새 메시지를 누적
+            chat_instance.user_chat += f"\nUser: {user_message}"  # 사용자 메시지 추가
+            chat_instance.suspect_chat += f"\nGPT: {gpt_response}"  # GPT 응답 추가
+
+            # 변경 사항 저장
+            chat_instance.save()
+
+            logger.info(f"Chat message updated for chat_id {self.chat_id}: User: {user_message}, GPT: {gpt_response}")
+        except Chat.DoesNotExist:
+            logger.error(f"Chat with id {self.chat_id} does not exist.")
+        except Exception as e:
+            logger.error(f"Error updating chat message: {str(e)}", exc_info=True)
 
