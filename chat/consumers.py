@@ -210,56 +210,37 @@ class MyConsumer(AsyncWebsocketConsumer):
 
             # 용의자가 범인인지 여부에 따라 목표 설정
             goal = (
-                f"""당신은 무고한 시민입니다. 당신의 무죄를 설득력 있게 주장하고, 범죄와 관련된 혐의를 피하십시오.
-                심문관의 질문에 진실된 알리바이를 제공하세요. 단, 증명하기 어려운 상황도 추가하세요."""
+                f"You play the role of an innocent citizen among suspects. Convincingly argue your innocence and avoid being implicated in a crime."
                 if not suspect["is_theif"] else
-                f"""당신은 범인입니다. 당신의 혐의를 완전히 인정하지 않으면서 의심을 다른 곳으로 돌리십시오.
-                다만, 질문 3번에 1번 꼴로 완벽한 거짓말은 하지 말고, 심문관의 질문에 당신의 답변으로 당신이 범인임을 유추할 수 있는 사용자가 의심할 만한 논리적인 매우 작은 단서를 질문에 어울리게 포함하십시오. 혹은 앞서 했던 답변과 모순되는 내용을 포함한 대답을 하시오.
-                질문에는 너무 주제에서 벗어나는 답변을 하지 마시오.
-                """
+                f"You play the role of the culprit among the suspects. You need to divert the detective's suspicions without fully admitting your guilt. However, don't tell a complete lie. Don't identify yourself as the culprit. You can make contradictory statements, but they shouldn't be crucial to the investigation."
             )
 
             # 프롬프트 생성
-            prompt = f"""
-            당신은 용의자 {suspect['name']}입니다. 나이는 {suspect['age']}세이고, 성별은 {suspect['gender']}입니다.
-            직업은 {suspect['job']}이며, 성격은 다음과 같습니다: "{suspect['description']}".
-            현재{suspect['scenario']['location']}에서 {suspect['scenario']['datetime']}에 발생한 {suspect['scenario']['type']}사건에 대해 심문을 받고 있습니다.
-            사건에 대해서 설명하자면 {suspect['scenario']['description']} 이런 사건입니다.
-            
-            해당 사건에서 발견된 증거는 다음과 같습니다:
-            {formatted_evidence}
-            이 외의 사용자가 확인할 수 있는 증거는 없습니다.
-            
-            지금까지의 대화 기록은 다음과 같습니다:
-            {formatted_history}
-
-            심문관이 방금 당신에게 다음과 같이 물었습니다: "{user_message}"
-
-            {goal}
-            모든 답변은 영어 번역이 아닌 한국어로 작성하고, 직접적으로 자신이 범인이라고 해서는 안됩니다.
-            대화 상대는 수사관 한명이며, 수사의 방향성을 제시해줄 필요는 없습니다.
-            당신은 1인칭으로 바로 답변해주면 됩니다.
-            답변에서 절대 증거에 관해서 먼저 이야기를 꺼내지 마세요.
-            절대로 비속어를 사용해서는 안됩니다. 
-            
-            다음은 예상 질문에 따른 답변의 방향성 입니다.
-            
-            예시 1.
-            질문: 사건 당일 오후 5시에 어디에 있었습니까?
-            범인: 거짓 알리바이를 만드세요. 단, 시간이 명확하지 않거나 약간 의심할 수 있는 단서를 포함하세요.  
-            무고한 시민: 진실된 알리바이를 제공하세요. 단, 증명하기 어려운 상황도 추가하세요. 
-            
-            예시 2.
-            질문: 사건 현장에서 당신의 지문이 발견되었는데 어떻게 설명하겠습니까?
-            범인: 지문이 발견된 이유를 정당화하세요. 예를 들어, "전에 그곳에 간 적이 있다"고 말하세요. 
-            무고한 시민: 지문이 그곳에 있을 리가 없다고 주장하며 억울함을 강조하세요. 
-            
-            예시 3.
-            질문: cctv 영상에서 당신과 비슷한 사람이 찍혔습니다. 이에 대해 어떻게 설명하시겠습니까?
-            범인: CCTV 영상을 부정하거나 다른 사람으로 오해되었을 가능성을 제시하세요.   
-            무고한 시민: CCTV가 잘못되었거나 자신이 찍혔을 리가 없다고 논리적으로 반박하세요. 
-            
-            """
+            prompt = (
+            f"We have created a fictional deduction game scenario and you need to create a suspect(you) and a detective(user) interrogation of the suspect and the suspect's answers to the detective's questions. Consider the following items as you answer the detective's questions.\n"
+            f"0. All inputs are in Korean.\n"
+            f"1. the fictional scenario is as follows\n"
+            f"- The location of the incident: {suspect['scenario']['location']}\n"
+            f"- Time of the incident : {suspect['scenario']['datetime']}\n"
+            f"- Type of incident : suspect['scenario']['datetime']\n"
+            f"- Detailed description of the incident : {suspect['scenario']['description']}\n\n"
+            f"2. the suspect you need to create has the following characteristics\n"
+            f"- Name : {suspect['name']}\n"
+            f"- Age : {suspect['age']}\n"
+            f"- Gender : {suspect['gender']}\n"
+            f"- Job : {suspect['job']}\n"
+            f"- description : {suspect['description']}\n"
+            f"- Suspect's situation at the time of the incident : \n\n"
+            f"3. evidence found in the case, including \n"
+            f"{formatted_evidence}\n"
+            f"To keep in mind that no other evidence exists.\n"
+            f"4. the transcript of the conversation so far is as follows.\n"
+            f"{formatted_history}\n"
+            f"5. {goal}\n"
+            f"6. The detective's (user's) questions were given as follows. Give the appropriate answers : \n"
+            f" 7. All answers should be printed in Korean. \n"
+            f" 8. Answer in the first person. \n"
+            )
 
             logger.debug(f"Prompt created: {prompt}")
             return prompt.strip()
