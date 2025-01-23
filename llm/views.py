@@ -11,7 +11,6 @@ from scenario.models import Scenario
 from evidence.models import Evidence
 from suspect.models import Suspect
 from random import shuffle
-import requests
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from urllib.parse import quote
@@ -391,8 +390,8 @@ class GenerateSuspectAPIView(APIView):
         return response
 
     @swagger_auto_schema(
-        operation_id="증거 생성하기",
-        operation_description="증거 생성하기",
+        operation_id="용의자 생성하기",
+        operation_description="용의자 생성하기",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -401,7 +400,7 @@ class GenerateSuspectAPIView(APIView):
             required=['scenario_id'],  # 필수 값 설정
         ),
         responses={
-            201: openapi.Response('증거 생성 성공', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
+            201: openapi.Response('용의자 생성 성공', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
             400: openapi.Response(description="scenario_id 오류"),
             500: openapi.Response(description="예상치 못한 예외 발생"),
             502: openapi.Response(description="입력 값이 잘 못 되었거나 HTTP method가 잘 못되었습니다.")
@@ -415,6 +414,12 @@ class GenerateSuspectAPIView(APIView):
                 scenario_id = data.get("scenario_id")
                 scenario = Scenario.objects.get(id=scenario_id)
 
+                female_image_url, male_image_urls = get_suspect_images()
+
+                # 디버깅: 반환값 확인
+                logger.debug(f"Female image URL: {female_image_url}")
+                logger.debug(f"Male image URLs: {male_image_urls}")
+
                 suspect_list = []
                 genders = [0, 0, 1]  # 0: 남성, 1: 여성
                 task_ids = [1, 2, 3]
@@ -422,17 +427,10 @@ class GenerateSuspectAPIView(APIView):
                 shuffle(genders)  # 남성 2명, 여성 1명으로 섞음
                 shuffle(criminal_index) # 범인과 무고인을 섞음
 
-                # 여성에게 항상 task_id 3을 부여
-                for i, gender in enumerate(genders):
-                    if gender == 1:  # 여성
-                        genders[i] = {"gender": gender, "task_id": 3}
-                    else:  # 남성
-                        genders[i] = {"gender": gender, "task_id": task_ids.pop(0)}  # 남성에게 남은 task_id 할당
-
                 for i in range(3):
                     criminal_select = criminal_index[i]
                     gender_select = genders[i]
-                    task_id = genders[i]["task_id"]
+                    task_id = task_ids.pop(genders.index(gender_select))  # gender에 따른 task_id 할당
                     suspect_prompt = (
                         f"You have created a fictional deduction game scenario and need to generate a suspect for it. "
                         f"Create one suspect ({i + 1}) based on the following event Type and scenario, provided in Korean.\n\n"
@@ -474,10 +472,6 @@ class GenerateSuspectAPIView(APIView):
                         print(f"suspect data : {suspect_data}\n")
                         print(f"suspect data_type : {type(suspect_data)}\n")
 
-                    suspect_gender = False
-                    suspect_image_url = "default.png"
-                    female_image_url, male_image_urls = get_suspect_images()
-
                     try:
                         suspect_name = suspect_data[0].split(":")[1].strip()   # 이름 추출
 
@@ -487,8 +481,6 @@ class GenerateSuspectAPIView(APIView):
                         elif gender_select == 1: #여성
                             suspect_gender = True
                             suspect_image_url = female_image_url
-                        else:
-                            logger.warning(f"Default image used for suspect due to missing or invalid gender/image data.")
 
                         suspect_age = random.randint(20, 39) #나이 선택
 
