@@ -164,6 +164,7 @@ class ScenarioAPIView(APIView):
                     f"5. There are {3} suspects and {2} pieces of evidence. Do not include these in the scenario. However, keep them in mind when creating the scenario.\n"
                     f"6. The scenario should be 150 characters or less.\n"
                     f"7. All scenarios must be written and structured in Korean.\n\n"
+                    f"8. But, Don't include this characteristics like colon on your response"
                     f"Now, write the scenario."
                 )
 
