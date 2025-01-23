@@ -329,33 +329,33 @@ class GenerateEvidenceAPIView(APIView):
                         print(f"증거 이름 {i + 1}번 : {evidence_name}\n")
                         print(f"증거 설명 {i + 1}번 : {evidence_description}\n")
 
-                    evidence_image_prompt = (
-                        f"Generate an evidence image for a deduction game. "
-                        f"Use the image generation tool to create an image of the evidence ({i + 1}) based on the following scenario, type, and evidence description, all provided in Korean.\n\n"
-                        f"Type: {scenario.type}\n"
-                        f"Scenario: {scenario.description}\n"
-                        f"Evidence description: {evidence_description}\n\n"
-                        f"Create an image that visually represents the evidence described. "
-                        f"Ensure the image reflects the type, the scenario's context, and the details given in the evidence description. "
-                        f"Output the generated image."
-                    )
-
-                    evidence_image_response = client.images.generate(
-                        model="dall-e-3",
-                        prompt=truncate_prompt(evidence_image_prompt),
-                        n=1,
-                        size="1024x1024"
-                    )
-                    generate_image_url = evidence_image_response.data[0].url
-                    image_data = requests.get(generate_image_url).content
-
-                    # S3에 이미지 업로드
-                    uploaded_image_url = upload_to_s3(f"user_{scenario.user_id}_scenario_{scenario.id}_evidence_{i + 1}.png", image_data, "image/png")
-
-                    evidence_image_url = uploaded_image_url if uploaded_image_url else "test.jpg"
-
-                    if debug:
-                        print(f"사건 이미지 주소 : {evidence_image_url}")
+                    # evidence_image_prompt = (
+                    #     f"Generate an evidence image for a deduction game. "
+                    #     f"Use the image generation tool to create an image of the evidence ({i + 1}) based on the following scenario, type, and evidence description, all provided in Korean.\n\n"
+                    #     f"Type: {scenario.type}\n"
+                    #     f"Scenario: {scenario.description}\n"
+                    #     f"Evidence description: {evidence_description}\n\n"
+                    #     f"Create an image that visually represents the evidence described. "
+                    #     f"Ensure the image reflects the type, the scenario's context, and the details given in the evidence description. "
+                    #     f"Output the generated image."
+                    # )
+                    #
+                    # evidence_image_response = client.images.generate(
+                    #     model="dall-e-3",
+                    #     prompt=truncate_prompt(evidence_image_prompt),
+                    #     n=1,
+                    #     size="1024x1024"
+                    # )
+                    # generate_image_url = evidence_image_response.data[0].url
+                    # image_data = requests.get(generate_image_url).content
+                    #
+                    # # S3에 이미지 업로드
+                    # uploaded_image_url = upload_to_s3(f"user_{scenario.user_id}_scenario_{scenario.id}_evidence_{i + 1}.png", image_data, "image/png")
+                    #
+                    # evidence_image_url = uploaded_image_url if uploaded_image_url else "test.jpg"
+                    #
+                    # if debug:
+                    #     print(f"사건 이미지 주소 : {evidence_image_url}")
 
                     evidence_name_last.append(evidence_name)
 
@@ -363,13 +363,13 @@ class GenerateEvidenceAPIView(APIView):
                         scenario=scenario,
                         name=evidence_name,
                         description=evidence_description,
-                        image=evidence_image_url
+                        image="test.png" #evidence_image_url
                     )
                     evidence_list.append({
                         "id": evidence.id,
                         "name": evidence.name,
                         "description": evidence.description,
-                        "image":evidence_image_url
+                        "image":"test.png" #evidence_image_url
                     })
 
                 logger.info(f"llm/views.py/post - 증거 생성 완료: {scenario_id}")
@@ -457,9 +457,6 @@ class GenerateSuspectAPIView(APIView):
                         f"All output must be in Korean.\n\n"
                         f"Generate the suspect now."
                     )
-
-                    female_image_url, male_image_urls = get_suspect_images()
-
                     suspect_response = client.chat.completions.create(
                         model="gpt-4",
                         messages=[{"role": "user", "content": suspect_prompt}]
@@ -479,6 +476,7 @@ class GenerateSuspectAPIView(APIView):
 
                     suspect_gender = False
                     suspect_image_url = "default.png"
+                    female_image_url, male_image_urls = get_suspect_images()
 
                     try:
                         suspect_name = suspect_data[0].split(":")[1].strip()   # 이름 추출
@@ -489,6 +487,8 @@ class GenerateSuspectAPIView(APIView):
                         elif gender_select == 1: #여성
                             suspect_gender = True
                             suspect_image_url = female_image_url
+                        else:
+                            logger.warning(f"Default image used for suspect due to missing or invalid gender/image data.")
 
                         suspect_age = random.randint(20, 39) #나이 선택
 
