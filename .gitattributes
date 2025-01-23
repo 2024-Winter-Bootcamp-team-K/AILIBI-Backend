@@ -1,0 +1,4 @@
+*.html linguist-vendored
+*.css linguist-vendored
+*.java linguist-vendored
+*.python linguist-vendored=false
