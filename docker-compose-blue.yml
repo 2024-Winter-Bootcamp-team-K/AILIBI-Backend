@@ -26,6 +26,7 @@ services:
         networks:
             - app_network
 
+
     redis_exporter:
         image: oliver006/redis_exporter:latest
         container_name: redis_exporter
@@ -81,6 +82,7 @@ services:
         depends_on:
             - blue-backend
 
+
     grafana:
         image: grafana/grafana:9.5.20
         container_name: grafana
@@ -99,6 +101,7 @@ services:
             - app_network
         depends_on:
             - prometheus
+
 
     cadvisor:
         image: gcr.io/cadvisor/cadvisor:v0.49.1
@@ -156,6 +159,7 @@ services:
 #        networks:
 #            - app_network #같은 네트워크
 #        command: --config.file=/etc/alertmanager/alertmanager.yml --log.level=debug #설정파일 설정
+
 
 volumes:
   grafana_data:
