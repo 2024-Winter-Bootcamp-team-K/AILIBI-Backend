@@ -217,8 +217,8 @@ class MyConsumer(AsyncWebsocketConsumer):
         """
         # 'chat' 앱의 Chat 모델 가져오기
         Chat = apps.get_model('chat', 'Chat')
-        
-        new_chat = Chat.objects.create(user_chat="", suspect_chat="")
+
+        new_chat = Chat.objects.create(user_chat="", suspect_chat="", suspect_id=self.suspect_id)
         return new_chat.id
 
     @sync_to_async
