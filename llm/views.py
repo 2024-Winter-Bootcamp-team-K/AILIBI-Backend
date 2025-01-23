@@ -432,7 +432,11 @@ class GenerateSuspectAPIView(APIView):
                     gender_select = genders[i]
                     # Task ID 할당
                     if task_ids:
-                        task_id = task_ids.pop(0)  # 남은 Task ID에서 순차적으로 사용
+                        if gender_select == 1 and 3 in task_ids:  # 여성이고 task_id 3이 남아 있다면
+                            task_id = 3
+                            task_ids.remove(3)  # task_id 3을 리스트에서 제거
+                        else:  # 그렇지 않으면 순차적으로 할당
+                            task_id = task_ids.pop(0)
                         # 디버깅 로그
                     logger.debug(f"Suspect {i + 1} - Gender: {gender_select}, Task ID: {task_id}")
 
