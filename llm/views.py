@@ -430,7 +430,12 @@ class GenerateSuspectAPIView(APIView):
                 for i in range(3):
                     criminal_select = criminal_index[i]
                     gender_select = genders[i]
-                    task_id = task_ids.pop(genders.index(gender_select))  # gender에 따른 task_id 할당
+                    # Task ID 할당
+                    if task_ids:
+                        task_id = task_ids.pop(0)  # 남은 Task ID에서 순차적으로 사용
+                        # 디버깅 로그
+                    logger.debug(f"Suspect {i + 1} - Gender: {gender_select}, Task ID: {task_id}")
+
                     suspect_prompt = (
                         f"You have created a fictional deduction game scenario and need to generate a suspect for it. "
                         f"Create one suspect ({i + 1}) based on the following event Type and scenario, provided in Korean.\n\n"
