@@ -25,9 +25,7 @@ scrape_configs:
       - targets: [ 'node_exporter:9100' ]
 
   - job_name: 'blue-backend'
-    scheme: 'https'
-    tls_config:
-      insecure_skip_verify: true
+    scheme: 'http'
     static_configs:
       - targets: [ 'blue-backend:8000' ]
 
