@@ -79,23 +79,23 @@ services:
             - app_network
 
     blue-backend:
-        image: backend:blue
+        image: backend-blue-backend
         container_name: blue-backend
         restart: always
         networks:
             - app_network
         environment:
-            - ENV=production
+            - ENV=.env
             - DJANGO_SETTINGS_MODULE=Backend.settings
 
     green-backend:
-        image: backend:green
+        image: backend-green-backend
         container_name: green-backend
         restart: always
         networks:
             - app_network
         environment:
-            - ENV=production
+            - ENV=.env
             - DJANGO_SETTINGS_MODULE=Backend.settings
 
 
