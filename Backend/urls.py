@@ -41,6 +41,7 @@ urlpatterns = [
     path(r'redoc', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc-v1'),
     path('', include('django_prometheus.urls')),
     path("admin/", admin.site.urls),
+    path("health", include("health.urls")),
     path('api/v1/stt', include('stt.urls')),
     path('api/v1/auth', include('user.urls')),  # 사용자 로그인/회원가입
 

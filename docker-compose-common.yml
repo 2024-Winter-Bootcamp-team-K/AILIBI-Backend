@@ -54,6 +54,7 @@ services:
             logging_jobname: "containerlogs" #그라파나에서 사용될 로그 job 이름 태그.
         depends_on:
             - blue-backend
+            - green-backend
 
     loki:
         image: grafana/loki:latest
@@ -76,6 +77,26 @@ services:
             - loki
         networks:
             - app_network
+
+    blue-backend:
+        image: myapp:blue
+        container_name: blue-backend
+        restart: always
+        networks:
+            - app_network
+        environment:
+            - ENV=production
+            - DJANGO_SETTINGS_MODULE=myapp.settings.blue
+
+    green-backend:
+        image: myapp:green
+        container_name: green-backend
+        restart: always
+        networks:
+            - app_network
+        environment:
+            - ENV=production
+            - DJANGO_SETTINGS_MODULE=myapp.settings.green
 
 
 volumes:
