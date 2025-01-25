@@ -86,7 +86,7 @@ services:
             - app_network
         environment:
             - ENV=production
-            - DJANGO_SETTINGS_MODULE=myapp.settings.blue
+            - DJANGO_SETTINGS_MODULE=Backend.settings
 
     green-backend:
         image: myapp:green
@@ -96,7 +96,7 @@ services:
             - app_network
         environment:
             - ENV=production
-            - DJANGO_SETTINGS_MODULE=myapp.settings.green
+            - DJANGO_SETTINGS_MODULE=Backend.settings
 
 
 volumes:
