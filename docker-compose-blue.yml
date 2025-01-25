@@ -14,6 +14,9 @@ services:
         restart: on-failure
         ports:
             - "8000:8000"
+        labels:
+            logging: "promtail" #라벨링
+            logging_jobname: "containerlogs" #그라파나에서 사용될 로그 job 이름 태그.
         environment:
             DB_NAME: "${DB_NAME}"
             DB_USER: "${DB_USER}"
