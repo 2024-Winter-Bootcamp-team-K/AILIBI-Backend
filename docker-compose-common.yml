@@ -54,7 +54,7 @@ services:
             logging_jobname: "containerlogs" #그라파나에서 사용될 로그 job 이름 태그.
         depends_on:
             - blue-backend
-            - green-backend
+            #- green-backend
 
     loki:
         image: grafana/loki:latest
