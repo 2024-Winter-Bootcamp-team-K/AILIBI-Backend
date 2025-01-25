@@ -29,6 +29,9 @@ try:
 except FileNotFoundError:
     secret_data = {}
 
+# Determine deployment environment: 'blue' or 'green' (default is 'blue')
+DEPLOY_ENV = os.getenv('DEPLOY_ENV', 'local')
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = secret_data.get('SECRET_KEY', os.getenv('SECRET_KEY', 'fallback-secret-key'))
 
@@ -72,6 +75,11 @@ AWS_DEFAULT_ACL = None
 DEBUG = True
 
 ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1', 'blue-backend', 'green-backend']
+
+if DEPLOY_ENV == 'blue':
+    ALLOWED_HOSTS.append('blue.ailibi.click')
+elif DEPLOY_ENV == 'green':
+    ALLOWED_HOSTS.append('green.ailibi.click')
 
 # Application definition
 
