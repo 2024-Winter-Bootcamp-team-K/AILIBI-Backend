@@ -79,7 +79,7 @@ services:
             - app_network
 
     blue-backend:
-        image: backend:blue
+        image: myapp:blue
         container_name: blue-backend
         restart: always
         networks:
@@ -89,7 +89,7 @@ services:
             - DJANGO_SETTINGS_MODULE=Backend.settings
 
     green-backend:
-        image: backend:green
+        image: myapp:green
         container_name: green-backend
         restart: always
         networks:
