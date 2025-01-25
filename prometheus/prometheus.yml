@@ -25,9 +25,11 @@ scrape_configs:
       - targets: [ 'node_exporter:9100' ]
 
   - job_name: 'blue-backend'
-    scheme: 'http'
+    scheme: 'https'
     static_configs:
-      - targets: [ 'blue-backend:8000' ]
+      - targets: [ 'nginx:443' ]
+    tls_config:
+      insecure_skip_verify: true
 
   - job_name: 'rabbitmq'
     static_configs:
