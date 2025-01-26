@@ -74,7 +74,10 @@ AWS_DEFAULT_ACL = None
 # 일단 True로 유지
 DEBUG = True
 
-ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click', 'localhost', '127.0.0.1', 'blue-backend', 'green-backend']
+ALLOWED_HOSTS = ['ailibi.click', 'www.ailibi.click',
+                 'ailibi.link', 'www.ailibi.link',
+                 'localhost', '127.0.0.1',
+                 'blue-backend', 'green-backend']
 
 if DEPLOY_ENV == 'blue':
     ALLOWED_HOSTS.append('blue.ailibi.click')
@@ -123,6 +126,8 @@ MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
 CORS_ALLOWED_ORIGINS = [
     "https://ailibi.click",       # 메인 도메인
     "https://www.ailibi.click",  # www 서브도메인
+    'https://ailibi.click',
+    'https://www.ailibi.click',
     "http://localhost:3000",     # 개발 환경의 프론트엔드
 ]
 
@@ -201,6 +206,8 @@ CELERY_TIMEZONE = 'Asia/Seoul'
 CSRF_TRUSTED_ORIGINS = [
     'https://ailibi.click',
     'https://www.ailibi.click',
+    'https://ailibi.link',
+    'https://www.ailibi.link',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
 ]
