@@ -126,8 +126,8 @@ MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
 CORS_ALLOWED_ORIGINS = [
     "https://ailibi.click",       # 메인 도메인
     "https://www.ailibi.click",  # www 서브도메인
-    'https://ailibi.click',
-    'https://www.ailibi.click',
+    'https://ailibi.link',
+    'https://www.ailibi.link',
     "http://localhost:3000",     # 개발 환경의 프론트엔드
 ]
 
