@@ -72,7 +72,7 @@ jobs:
 
           # 2. SSH로 EC2 서버에 접속
           ssh -i /tmp/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            cd /home/ubuntu/Backend
+            cd /home/ubuntu/AILIBI-Backend
             git pull origin develop
             docker-compose version
             docker-compose -f docker-compose-common.yml -f docker-compose-blue.yml down --volumes --remove-orphans || true
@@ -99,7 +99,7 @@ jobs:
 #
 #          # 2. SSH로 EC2 서버에 접속
 #          ssh -i /tmp/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-#            cd /home/ubuntu/Backend
+#            cd /home/ubuntu/AILIBI-Backend
 #            git pull origin develop
 #            docker-compose version
 #            docker-compose -f docker-compose-common.yml -f docker-compose-green.yml down --volumes --remove-orphans || true
