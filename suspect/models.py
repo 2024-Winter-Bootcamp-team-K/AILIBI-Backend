@@ -23,7 +23,7 @@ class Suspect(models.Model):
     init_chat = models.TextField(blank=True)
     is_theif = models.BooleanField(choices=THEIF_CHOICES, null=False)
     image = models.CharField(max_length=512, null=False)
-    task_id = models.IntegerField(null=False)
+    task_id = models.IntegerField(null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=False)
     updated_at = models.DateTimeField(auto_now=True, null=True)
     is_deleted = models.BooleanField(default=False, null=True)
