@@ -561,7 +561,8 @@ class GenerateSuspectAPIView(APIView):
                         description= suspect_description,
                         init_chat= suspect_initial_statement,
                         is_theif=is_theif,
-                        image= suspect_image_url
+                        image= suspect_image_url,
+                        task_id = task_id
                     )
 
                     suspect_list.append({
