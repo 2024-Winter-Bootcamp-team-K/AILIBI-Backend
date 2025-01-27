@@ -238,7 +238,7 @@ class ScenarioAPIView(APIView):
                 return JsonResponse({"scenario_id": scenario.id,
                                     "scenario_description": scenario_description,
                                     "scenario_image": scenario_image_url,
-                                    }, status=201)
+                                    }, status=201, content_type="application/json")
             except Exception as e:
                 logger.exception(f"llm/views.py/post - 시나리오 생성 예외 발생 : {e}")
                 return JsonResponse({"error": str(e)}, status=500)
