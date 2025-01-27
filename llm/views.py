@@ -90,7 +90,7 @@ class ScenarioAPIView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
 
@@ -245,64 +245,6 @@ class ScenarioAPIView(APIView):
 
         logger.error(f"llm/views.py/post - error : Invalid request method")
         return JsonResponse({"error": "Invalid request method"}, status=502)
-
-    @swagger_auto_schema(
-        operation_id="생성된 시나리오 조회",
-        operation_description="생성된 시나리오 조회",
-        manual_parameters=[
-            openapi.Parameter(
-                'scenario_id', openapi.IN_QUERY,
-                description="ID of the scenario",
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        responses={
-            200: openapi.Response(
-                description="scenarios detail",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        'id': openapi.Schema(type=openapi.TYPE_INTEGER, description="Scenario ID"),
-                        'user_id': openapi.Schema(type=openapi.TYPE_INTEGER, description="User ID"),
-                        'name': openapi.Schema(type=openapi.TYPE_STRING, description="Scenario Name"),
-                        'location': openapi.Schema(type=openapi.TYPE_STRING, description="Location"),
-                        'type': openapi.Schema(type=openapi.TYPE_STRING, description="Type of event"),
-                        'datetime': openapi.Schema(type=openapi.TYPE_STRING, description="Date and time"),
-                        'description': openapi.Schema(type=openapi.TYPE_STRING, description="Description"),
-                        'image': openapi.Schema(type=openapi.TYPE_STRING, description="Image URL"),
-                    }
-                )
-            ),
-            400: "scenario_id is required",
-            404: "Scenario not found"
-        }
-    )
-    def get(self, request):
-        scenario_id = request.GET.get('scenario_id')
-        if not scenario_id:
-            logger.error("scenario_id parameter is missing")
-            return Response({"error": "scenario_id is required"}, status=400)
-
-        scenario = Scenario.objects.filter(id=scenario_id).first()
-        if not scenario:
-            logger.error(f"Scenario with ID {scenario_id} not found")
-            return Response({"error": "Scenario not found"}, status=404)
-
-        response_data = {
-            "id": scenario.id,
-            "user_id": scenario.user_id,
-            "name": scenario.name,
-            "location": scenario.location,
-            "type": scenario.type,
-            "datetime": scenario.datetime,
-            "description": scenario.description,
-            "image": scenario.image,
-        }
-
-        logger.info(f"Scenario retrieved successfully: {response_data}")
-        return Response(response_data, status=200)
-
 
 class GenerateEvidenceAPIView(APIView):
     def options(self, request, *args, **kwargs):

@@ -202,7 +202,7 @@ class ScenariosView(APIView):
 
         except Scenario.DoesNotExist:
             logger.error(f"user/views.py/HistoriesView - error: Scenario not found")
-            return Response({"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND, content_type="application/json")
 
 
 
