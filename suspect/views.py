@@ -6,6 +6,7 @@ from drf_yasg import openapi
 from .models import Suspect
 from chat.models import Chat
 from .serializers import SuspectSerializer
+from scenario.models import Scenario
 
 import logging
 
@@ -107,7 +108,6 @@ class SuspectDetailView(APIView):
             logger.error(f"suspect/views.py/SuspectDetailView - error : Chat not found")
             return Response({"error": "Chat not found"}, status=status.HTTP_404_NOT_FOUND)
 
-
 class SuspectsChooseView(APIView):
     def options(self, request, *args, **kwargs):
         response = Response()
@@ -155,9 +155,20 @@ class SuspectsChooseView(APIView):
             suspect = Suspect.objects.get(id=suspect_id)
             is_theif_value = suspect.is_theif
 
+            # 범인일 경우 시나리오의 is_success 값을 True로 변경
+            if is_theif_value:
+                scenario = Scenario.objects.get(id=suspect.scenario_id)
+                scenario.is_success = True
+                scenario.save()
+                logger.info(f"Scenario {scenario.id} is_success set to True")
+
             logger.info(f"suspect/views.py/SuspectChooseView - {suspect.id} : {is_theif_value}")
             return Response({"is_theif": is_theif_value}, status=status.HTTP_200_OK)
 
         except Suspect.DoesNotExist:
             logger.error(f"suspect/views.py/SuspectChooseView - error : Suspect not found")
             return Response({"error": "Suspect not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        except Scenario.DoesNotExist:
+            logger.error("suspect/views.py/SuspectChooseView - error : Scenario not found")
+            return Response({"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND)
