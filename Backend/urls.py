@@ -19,7 +19,6 @@ from django.urls import path, re_path, include
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -39,7 +38,7 @@ urlpatterns = [
     path(r'swagger(?P<format>\.json|\.yaml)', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path(r'swagger', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path(r'redoc', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc-v1'),
-    path('metrics', csrf_exempt(include('django_prometheus.urls'))),
+    path('', include('django_prometheus.urls')),
     path("admin/", admin.site.urls),
     path("health", include("health.urls")),
     path('api/v1/stt', include('stt.urls')),
